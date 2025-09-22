@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
 
 export default function SearchBar() {
   return (
@@ -13,9 +14,11 @@ export default function SearchBar() {
         />
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" className="gap-2">
-          <SlidersHorizontal size={16} /> Filters
-        </Button>
+        <Link href={"/listings"} passHref>
+          <Button variant="outline" className="gap-2 cursor-pointer">
+            <SlidersHorizontal size={16} /> Filters
+          </Button>
+        </Link>
         <Button className="px-6">Search</Button>
       </div>
     </div>
