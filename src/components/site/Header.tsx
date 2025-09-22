@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +15,9 @@ const navItems = [
 ];
 
 export default function Header() {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
+
   useEffect(() => {
     const sync = () => setEmail(localStorage.getItem("userEmail"));
     sync();
@@ -24,36 +28,40 @@ export default function Header() {
       window.removeEventListener("auth-change", sync as any);
     };
   }, []);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-primary " />
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-md bg-primary" />
           <span className="font-extrabold tracking-tight text-xl text-primary">
             Rentora
           </span>
         </Link>
+
+        {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
-            <NavLink
+            <Link
               key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors",
-                  (isActive || pathname === item.to) && "text-foreground",
-                )
-              }
+              href={item.to}
+              className={cn(
+                "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors",
+                pathname === item.to && "text-foreground"
+              )}
             >
               {item.label}
-            </NavLink>
+            </Link>
           ))}
         </nav>
+
+        {/* Auth buttons */}
         <div className="flex items-center gap-2">
           {email ? (
             <>
               <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                <Link to="/dashboard">Dashboard</Link>
+                <Link href="/dashboard">Dashboard</Link>
               </Button>
               <Button
                 variant="outline"
@@ -68,10 +76,10 @@ export default function Header() {
           ) : (
             <>
               <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                <Link to="/login">Log in</Link>
+                <Link href="/login">Log in</Link>
               </Button>
               <Button asChild className="bg-primary hover:bg-primary/90">
-                <Link to="/signup">Sign up</Link>
+                <Link href="/signup">Sign up</Link>
               </Button>
             </>
           )}

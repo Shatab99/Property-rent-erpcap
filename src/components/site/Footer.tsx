@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 
 export default function Footer() {
@@ -38,19 +38,19 @@ export default function Footer() {
           <h4 className="font-semibold mb-3">Company</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>
-              <Link to="/about" className="hover:text-foreground">
+              <Link href="/about" className="hover:text-foreground">
                 About
               </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Careers
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Press
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -58,19 +58,19 @@ export default function Footer() {
           <h4 className="font-semibold mb-3">Resources</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Blog
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Market Insights
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Guides
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -78,17 +78,17 @@ export default function Footer() {
           <h4 className="font-semibold mb-3">Legal</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Terms
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-foreground">
+              <Link href="#" className="hover:text-foreground">
                 Privacy
-              </a>
+              </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-foreground">
+              <Link href="/contact" className="hover:text-foreground">
                 Contact
               </Link>
             </li>
