@@ -37,6 +37,9 @@ export default function PropertyCard({ property }: { property: Property }) {
           decoding="async"
           onError={onImgError}
           className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105${hasAltImage ? " group-hover:opacity-0" : ""}`}
+          width={400}
+          height={300}
+          data-fallback="0"
         />
         {hasAltImage && (
           <Image
@@ -45,6 +48,8 @@ export default function PropertyCard({ property }: { property: Property }) {
             loading="lazy"
             decoding="async"
             onError={onImgError}
+            width={400}
+            height={300}
             className="absolute inset-0 h-full w-full object-cover transition-all duration-300 opacity-0 group-hover:opacity-100"
           />
         )}
