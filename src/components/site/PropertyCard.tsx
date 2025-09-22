@@ -2,6 +2,7 @@ import React from "react";
 import { Heart, MapPin, BedSingle, Bath, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 export interface Property {
   id: string;
@@ -29,7 +30,7 @@ export default function PropertyCard({ property }: { property: Property }) {
   return (
     <div className="group overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
+        <Image
           src={property.image}
           alt={property.title}
           loading="lazy"
@@ -38,7 +39,7 @@ export default function PropertyCard({ property }: { property: Property }) {
           className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105${hasAltImage ? " group-hover:opacity-0" : ""}`}
         />
         {hasAltImage && (
-          <img
+          <Image
             src={property.images![1]}
             alt={property.title}
             loading="lazy"

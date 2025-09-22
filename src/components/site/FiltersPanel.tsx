@@ -10,6 +10,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 export type Filters = {
   query: string;
@@ -59,7 +60,7 @@ export default function FiltersPanel({
         <Label>Price range</Label>
         <Slider
           value={[filters.price[0], filters.price[1]]}
-          onValueChange={(v: any) =>
+          onValueChange={(v: number[]) =>
             setFilters({ ...filters, price: [v[0], v[1]] as [number, number] })
           }
           min={500}
@@ -76,7 +77,7 @@ export default function FiltersPanel({
         <Label>Bedrooms</Label>
         <Select
           value={String(filters.minBeds)}
-          onValueChange={(v: any) => setFilters({ ...filters, minBeds: Number(v) })}
+          onValueChange={(v: string) => setFilters({ ...filters, minBeds: Number(v) })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Any" />
@@ -98,7 +99,7 @@ export default function FiltersPanel({
           <label className="flex items-center gap-2">
             <Checkbox
               checked={filters.pets.cats}
-              onCheckedChange={(v: any) =>
+              onCheckedChange={(v: CheckedState) =>
                 setFilters({
                   ...filters,
                   pets: { ...filters.pets, cats: Boolean(v) },
@@ -110,7 +111,7 @@ export default function FiltersPanel({
           <label className="flex items-center gap-2">
             <Checkbox
               checked={filters.pets.dogs}
-              onCheckedChange={(v: any) =>
+              onCheckedChange={(v: CheckedState) =>
                 setFilters({
                   ...filters,
                   pets: { ...filters.pets, dogs: Boolean(v) },
@@ -129,7 +130,7 @@ export default function FiltersPanel({
             <label key={a} className="flex items-center gap-2">
               <Checkbox
                 checked={Boolean(filters.amenities[a])}
-                onCheckedChange={(v: any) =>
+                onCheckedChange={(v: CheckedState) =>
                   setFilters({
                     ...filters,
                     amenities: { ...filters.amenities, [a]: Boolean(v) },
