@@ -1,6 +1,6 @@
 import { Heart, MapPin, BedSingle, Bath, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import type { Property } from "@/components/site/PropertyCard";
 
 export default function PropertyRow({ property }: { property: Property }) {
@@ -60,7 +60,7 @@ export default function PropertyRow({ property }: { property: Property }) {
         </div>
         <div className="mt-4">
           <Button asChild>
-            <Link to={`/property/${property.id}`}>View details</Link>
+            <Link href={`/property/${property.id}`}>View details</Link>
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Heart, MapPin, BedSingle, Bath, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 export interface Property {
   id: string;
@@ -87,7 +87,7 @@ export default function PropertyCard({ property }: { property: Property }) {
         </div>
         <div className="mt-4">
           <Button asChild className="w-full">
-            <Link to={`/property/${property.id}`}>View details</Link>
+            <Link href={`/property/${property.id}`}>View details</Link>
           </Button>
         </div>
       </div>

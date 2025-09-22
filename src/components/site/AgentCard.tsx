@@ -1,13 +1,14 @@
 import { Phone, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Agent } from "@/data/agents";
+import Image from "next/image";
 
 export default function AgentCard({ agent }: { agent: Agent }) {
   return (
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
       <div className="flex flex-col sm:flex-row">
         <div className="relative w-full sm:w-64 aspect-[4/3] overflow-hidden">
-          <img
+          <Image
             src={agent.photo}
             alt={agent.name}
             loading="lazy"
