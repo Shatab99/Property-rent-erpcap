@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/", label: "Search" },
   { to: "/listings", label: "Listings" },
-  { to: "/find-agent", label: "Find Agent" },
+  { to: "/findAgent", label: "Find Agent" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ];

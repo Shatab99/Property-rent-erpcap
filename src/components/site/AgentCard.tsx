@@ -9,6 +9,7 @@ export default function AgentCard({ agent }: { agent: Agent }) {
       <div className="flex flex-col sm:flex-row">
         <div className="relative w-full sm:w-64 aspect-[4/3] overflow-hidden">
           <Image
+            height={300} width={400}
             src={agent.photo}
             alt={agent.name}
             loading="lazy"
