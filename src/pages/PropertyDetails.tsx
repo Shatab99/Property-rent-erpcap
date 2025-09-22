@@ -15,10 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function PropertyDetails({ id }: { id: string }) {
+    // Hooks must always be at the top
+    const [active, setActive] = useState<number>(0);
     const property = useMemo(() => properties.find((p) => p.id === id), [id]);
 
+    // Early return if property not found
     if (!property) {
         return (
             <div className="bg-white">
@@ -38,8 +42,6 @@ export default function PropertyDetails({ id }: { id: string }) {
     }
 
     const images = [property.image, property.image, property.image];
-    const [active, setActive] = useState(0);
-
     const mapQuery = encodeURIComponent(property.location);
 
     return (
@@ -79,7 +81,9 @@ export default function PropertyDetails({ id }: { id: string }) {
                         {/* Gallery */}
                         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
                             <div className="aspect-[16/9] overflow-hidden">
-                                <img
+                                <Image
+                                    width={400}
+                                    height={300}
                                     src={images[active]}
                                     alt={property.title}
                                     className="h-full w-full object-cover"
@@ -90,9 +94,13 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     <button
                                         key={i}
                                         onClick={() => setActive(i)}
-                                        className={`aspect-[4/3] overflow-hidden rounded-md ring-2 ${active === i ? "ring-primary" : "ring-transparent"}`}
+                                        className={`aspect-[4/3] overflow-hidden rounded-md ring-2 ${
+                                            active === i ? "ring-primary" : "ring-transparent"
+                                        }`}
                                     >
-                                        <img
+                                        <Image
+                                            width={400}
+                                            height={300}
                                             src={src}
                                             alt={`${property.title} ${i + 1}`}
                                             className="h-full w-full object-cover"
@@ -155,7 +163,8 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     "Secure entry",
                                 ].map((a) => (
                                     <li key={a} className="flex items-center gap-2">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {a}
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />{" "}
+                                        {a}
                                     </li>
                                 ))}
                             </ul>
@@ -214,7 +223,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                         const ids: string[] = JSON.parse(raw);
                                         if (!ids.includes(property.id)) ids.push(property.id);
                                         localStorage.setItem("contacted", JSON.stringify(ids));
-                                    } catch { }
+                                    } catch {}
                                     toast.success(`Thanks ${name}, we will reach out soon.`);
                                     form.reset();
                                     window.dispatchEvent(new Event("contacted-change"));

@@ -2,12 +2,14 @@ import { Heart, MapPin, BedSingle, Bath, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Property } from "@/components/site/PropertyCard";
+import Image from "next/image";
 
 export default function PropertyRow({ property }: { property: Property }) {
   return (
     <div className="group overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row">
       <div className="relative sm:w-64 aspect-[4/3] overflow-hidden">
-        <img
+        <Image
+          width={400} height={300}
           src={property.image}
           alt={property.title}
           loading="lazy"

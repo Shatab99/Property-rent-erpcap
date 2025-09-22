@@ -155,7 +155,8 @@ export default function HomePage() {
                 className="overflow-hidden rounded-xl border bg-white shadow-sm"
               >
                 <div className="aspect-[16/9] overflow-hidden">
-                  <img
+                  <Image
+                    width={400} height={300}
                     src={`https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1600&auto=format&fit=crop`}
                     alt="Market"
                     className="h-full w-full object-cover"
