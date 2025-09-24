@@ -1,6 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AdminHeader from "@/pages/admin/layout/AdminHeader";
-import  AdminSidebar  from "@/pages/admin/layout/AdminSidebar";
+import AdminHeader from "@/app/admin/layout/AdminHeader";
+import AdminSidebar from "@/app/admin/layout/AdminSidebar";
 
 interface AdminLayoutProps {
     children: React.ReactNode;

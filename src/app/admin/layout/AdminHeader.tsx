@@ -14,10 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminHeader() {
   return (
-    <SidebarProvider>
-      <header className="h-16 bg-white border-b border-border shadow-sm flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-border shadow-sm flex items-center justify-between px-6">
       <div className="flex items-center gap-4 ">
+
         <SidebarTrigger />
+
         <div className="flex items-center admin-search w-96">
           <Search className="w-4 h-4 text-muted-foreground ml-3 absolute" />
           <Input
@@ -67,6 +68,6 @@ export default function AdminHeader() {
         </DropdownMenu>
       </div>
     </header>
-    </SidebarProvider>
+
   );
 }
