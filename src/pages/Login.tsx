@@ -25,7 +25,7 @@ export default function Login() {
                 const form = e.currentTarget as HTMLFormElement;
                 const data = new FormData(form);
                 const email = String(data.get("email"));
-                localStorage.setItem("userEmail", email);
+                document.cookie = `token=${email}; path=/`;
                 window.dispatchEvent(new Event("auth-change"));
                 toast.success(`Logged in as ${email}`);
                 const next = new URLSearchParams(window.location.search).get(

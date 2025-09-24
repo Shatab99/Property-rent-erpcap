@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +17,10 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
+  const router = useRouter()
 
   useEffect(() => {
-    const sync = () => setEmail(localStorage.getItem("userEmail"));
+    const sync = () => setEmail(document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null);
     sync();
     window.addEventListener("storage", sync);
     window.addEventListener("auth-change", sync as any);
@@ -66,8 +67,9 @@ export default function Header() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  localStorage.removeItem("userEmail");
+                  document.cookie = "token=; path=/; max-age=0";
                   window.dispatchEvent(new Event("auth-change"));
+                  router.push("/login");
                 }}
               >
                 Log out
