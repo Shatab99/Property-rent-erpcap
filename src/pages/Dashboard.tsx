@@ -40,7 +40,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!token) router.push('/login');
-  }, [token]);
+  }, [token, router]);
 
   const [prefs, setPrefs] = useState<Prefs>(() => {
     try {
@@ -148,7 +148,7 @@ export default function Dashboard() {
                     <h2 className="text-lg font-semibold">Buyer profile</h2>
                     <div className="mt-4 grid gap-3 text-sm">
                       <div><span className="text-muted-foreground">Name:</span> <span className="font-medium">{profile.name || "—"}</span></div>
-                      <div><span className="text-muted-foreground">Email:</span> <span className="font-medium">{profile.email || localStorage.getItem("userEmail") || "—"}</span></div>
+                      <div><span className="text-muted-foreground">Email:</span> <span className="font-medium">{profile.email }</span></div>
                       <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium">{profile.phone || "—"}</span></div>
                       <div><span className="text-muted-foreground">Address:</span> <span className="font-medium">{profile.address || "—"}</span></div>
                       <div><span className="text-muted-foreground">Employment:</span> <span className="font-medium">{profile.employment || "—"}</span></div>
@@ -278,9 +278,7 @@ export default function Dashboard() {
                           id="email"
                           type="email"
                           value={
-                            profile.email ||
-                            localStorage.getItem("userEmail") ||
-                            ""
+                            profile.email
                           }
                           onChange={(e) =>
                             setProfile({ ...profile, email: e.target.value })
@@ -328,9 +326,7 @@ export default function Dashboard() {
                           id="pwd-email"
                           type="email"
                           defaultValue={
-                            profile.email ||
-                            localStorage.getItem("userEmail") ||
-                            ""
+                            profile.email
                           }
                           required
                         />

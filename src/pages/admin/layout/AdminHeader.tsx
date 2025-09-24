@@ -1,5 +1,5 @@
 "use client";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminHeader() {
   return (
-    <header className="h-16 bg-white border-b border-border shadow-sm flex items-center justify-between px-6">
+    <SidebarProvider>
+      <header className="h-16 bg-white border-b border-border shadow-sm flex items-center justify-between px-6">
       <div className="flex items-center gap-4 ">
         <SidebarTrigger />
         <div className="flex items-center admin-search w-96">
@@ -66,5 +67,6 @@ export default function AdminHeader() {
         </DropdownMenu>
       </div>
     </header>
+    </SidebarProvider>
   );
 }

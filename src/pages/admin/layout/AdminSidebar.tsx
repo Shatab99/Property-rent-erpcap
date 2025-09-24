@@ -20,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 
 const menuItems = [
@@ -71,52 +72,54 @@ export default function AdminSidebar() {
   };
 
   return (
-    <Sidebar
-      variant="sidebar"
-      className="w-64 bg-sidebar border-r border-sidebar-border"
-    >
-      <SidebarContent className="bg-sidebar">
-        {/* Logo */}
-        <div className="p-6 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="font-bold text-lg text-primary">PropAdmin</h2>
-              <p className="text-xs text-sidebar-foreground/70">
-                Property Management
-              </p>
+    <SidebarProvider>
+      <Sidebar
+        variant="sidebar"
+        className="w-64 bg-sidebar border-r border-sidebar-border"
+      >
+        <SidebarContent className="bg-sidebar">
+          {/* Logo */}
+          <div className="p-6 border-b border-sidebar-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-primary">PropAdmin</h2>
+                <p className="text-xs text-sidebar-foreground/70">
+                  Property Management
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <SidebarGroup className="px-4 py-6">
-          <SidebarGroupLabel className="text-gray-600 font-bold mb-4">
-            Main Menu
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2 ">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      href={item.url}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive(item.url)
+          <SidebarGroup className="px-4 py-6">
+            <SidebarGroupLabel className="text-gray-600 font-bold mb-4">
+              Main Menu
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2 ">
+                {menuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link
+                        href={item.url}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive(item.url)
                           ? "bg-sidebar-accent text-primary font-medium shadow-sm"
                           : "hover:bg-slate-200 hover:text-secondary"
-                        }`}
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+                          }`}
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        <span className="font-medium">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    </SidebarProvider>
   );
 }
