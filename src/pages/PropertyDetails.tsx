@@ -192,14 +192,14 @@ export default function PropertyDetails({ id }: { id: string }) {
                             <div className="mt-1 text-3xl font-extrabold">
                                 ${property.price.toLocaleString()}
                             </div>
-                            <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                                <div className="rounded-md bg-secondary/40 px-2 py-1 text-center">
+                            <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-black">
+                                <div className="rounded-md bg-secondary/10 px-2 py-1 text-center">
                                     {property.beds} bd
                                 </div>
-                                <div className="rounded-md bg-secondary/40 px-2 py-1 text-center">
+                                <div className="rounded-md bg-secondary/10 px-2 py-1 text-center">
                                     {property.baths} ba
                                 </div>
-                                <div className="rounded-md bg-secondary/40 px-2 py-1 text-center">
+                                <div className="rounded-md bg-secondary/10 px-2 py-1 text-center">
                                     {property.sqft.toLocaleString()} sqft
                                 </div>
                             </div>

@@ -73,7 +73,7 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="py-16 bg-secondary/40">
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-center">
             How it works
@@ -133,7 +133,7 @@ export default function HomePage() {
       </section>
 
       {/* Insights */}
-      <section className="py-16 bg-secondary/40">
+      <section className="py-16 ">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between">
             <div>
@@ -181,21 +181,21 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-br from-primary to-primary/80 text-white">
+      <section className="py-16 text-black">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
             List your property with confidence
           </h2>
-          <p className="mt-2 text-white/90">
+          <p className="mt-2 text-black/90">
             Reach vetted renters and manage applications with ease.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Button variant="secondary" className="text-primary">
+            <Button variant="secondary" className="text-white bg-primary hover:bg-primary/80">
               Post a listing
             </Button>
             <Button
               variant="outline"
-              className="bg-transparent text-white border-white/60 hover:bg-white/10"
+              className=" text-primary border-primary hover:bg-white/10"
             >
               Contact sales
             </Button>

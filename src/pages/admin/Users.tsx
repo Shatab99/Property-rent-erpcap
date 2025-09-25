@@ -40,7 +40,7 @@ const mockUsers = [
     name: "Sarah Johnson",
     email: "sarah.j@email.com",
     phone: "+1 (555) 987-6543",
-    role: "landlord",
+    role: "agent",
     status: "active",
     dateJoined: "2023-12-08",
     avatar: null,
@@ -92,7 +92,7 @@ export default function Users() {
       case "landlord":
         return <span className="bg-accent/10 text-accent border border-accent/20 px-2 py-1 rounded-full text-xs font-medium">Landlord</span>;
       case "tenant":
-        return <span className="bg-secondary text-secondary-foreground border border-border px-2 py-1 rounded-full text-xs font-medium">Tenant</span>;
+        return <span className="bg-secondary text-white border border-secondary px-2 py-1 rounded-full text-xs font-medium">Tenant</span>;
       default:
         return <span className="status-inactive">Unknown</span>;
     }
