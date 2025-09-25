@@ -19,16 +19,23 @@ export default function Header() {
   const [email, setEmail] = useState<string | null>(null);
   const router = useRouter()
 
+
+
   useEffect(() => {
+
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null;
     const sync = () => setEmail(document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null);
     sync();
     window.addEventListener("storage", sync);
     window.addEventListener("auth-change", sync as any);
+
     return () => {
       window.removeEventListener("storage", sync);
       window.removeEventListener("auth-change", sync as any);
     };
   }, []);
+
+  console.log(email)
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">

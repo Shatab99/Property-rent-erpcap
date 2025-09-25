@@ -1,3 +1,4 @@
+'use client';
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,8 +30,7 @@ const mockInquiryData = {
   }
 };
 
-export default function InquiryDetails({ }) {
-  const id = "1"
+export default function InquiryDetails({ id }: { id: string }) {
   const router = useRouter();
   const inquiry = mockInquiryData[id as keyof typeof mockInquiryData];
 

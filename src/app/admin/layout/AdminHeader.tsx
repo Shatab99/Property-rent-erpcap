@@ -1,5 +1,5 @@
 "use client";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 export default function AdminHeader() {
+
+  const router = useRouter();
+
   return (
     <header className="h-16 bg-white border-b border-border shadow-sm flex items-center justify-between px-6">
       <div className="flex items-center gap-4 ">
@@ -61,8 +65,12 @@ export default function AdminHeader() {
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              <span>Log out</span>
+            <DropdownMenuItem onClick={() => {
+              document.cookie = "token=; path=/; max-age=0";
+              window.dispatchEvent(new Event("auth-change"));
+              router.push("/login");
+            }} className="text-destructive">
+              <span >Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

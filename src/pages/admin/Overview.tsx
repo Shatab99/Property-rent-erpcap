@@ -125,8 +125,8 @@ export default function Overview() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="listings" fill="hsl(var(--primary))" name="New Listings" />
-                <Bar dataKey="inquiries" fill="hsl(var(--accent))" name="Inquiries" />
+                <Bar dataKey="listings" fill="#2253C3" name="New Listings" />
+                <Bar dataKey="inquiries" fill="#2253C3" name="Inquiries" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -147,9 +147,9 @@ export default function Overview() {
                 <Line
                   type="monotone"
                   dataKey="revenue"
-                  stroke="hsl(var(--primary))"
+                  stroke="#2253C3"
                   strokeWidth={3}
-                  dot={{ fill: "hsl(var(--primary))" }}
+                  dot={{ fill: "#2253C3" }}
                 />
               </LineChart>
             </ResponsiveContainer>
