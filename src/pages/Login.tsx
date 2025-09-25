@@ -32,7 +32,7 @@ export default function Login() {
                   "next",
                 );
                 form.reset();
-                router.push(next || "/");
+                router.push(email === "admin@gmail.com" ? "/admin" : next || "/");
               }}
             >
               <div className="space-y-2">
