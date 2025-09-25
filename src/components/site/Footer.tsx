@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import Image from "next/image";
+import logo from "../../../public/logo.png";
 
 export default function Footer() {
   return (
@@ -7,10 +9,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-primary" />
-            <span className="font-extrabold tracking-tight text-xl text-primary">
-              Rentora
-            </span>
+            <Image height={150} width={150} src={logo} alt="Logo" />
           </div>
           <p className="mt-4 text-sm text-muted-foreground max-w-xs">
             Modern rentals you can trust. Find, tour, and apply in minutes.

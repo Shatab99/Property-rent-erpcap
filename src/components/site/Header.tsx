@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import logo from "../../../public/logo.png";
 
 const navItems = [
   { to: "/", label: "Search" },
@@ -42,10 +44,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-primary" />
-          <span className="font-extrabold tracking-tight text-xl text-primary">
-            Rentora
-          </span>
+          <Image height={100} width={100} src={logo} alt="Logo" />
         </Link>
 
         {/* Navigation */}

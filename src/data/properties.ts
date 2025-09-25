@@ -78,10 +78,10 @@ export const properties: Property[] = [
     baths: 2,
     sqft: 1320,
     image:
-      "https://images.unsplash.com/photo-1591247378418-28bf4b1b9fed?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1591247378418-28bf4b1b9fed?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1560185009-dddeb820c7b3?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1600&auto=format&fit=crop",
     ],
     pets: { cats: true, dogs: true },
     amenities: ["Hardwood floors", "Laundry", "Parking"],
@@ -94,11 +94,11 @@ export const properties: Property[] = [
     beds: 2,
     baths: 2,
     sqft: 1100,
-    image:
-      "https://images.unsplash.com/photo-1560185009-dddeb820c7b3?q=80&w=1600&auto=format&fit=crop",
+      image:
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1560185009-dddeb820c7b3?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1591247378418-28bf4b1b9fed?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1600&auto=format&fit=crop",
     ],
     pets: { cats: false, dogs: true },
     amenities: ["Garage", "Gym"],
