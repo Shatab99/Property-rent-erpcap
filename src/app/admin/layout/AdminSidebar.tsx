@@ -22,6 +22,8 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
+import logo from "../../../../public/logo.png";
 
 const menuItems = [
   {
@@ -80,9 +82,13 @@ export default function AdminSidebar() {
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-primary" />
-            </div>
+            <Image
+              height={100}
+              width={100}
+              src={logo}
+              alt="Logo"
+              className="rounded-md"
+            />
             <div>
               <h2 className="font-bold text-lg text-primary">PropAdmin</h2>
               <p className="text-xs text-sidebar-foreground/70">
