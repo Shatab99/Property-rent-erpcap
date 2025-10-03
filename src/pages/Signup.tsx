@@ -29,10 +29,10 @@ export default function Signup() {
                 const data = new FormData(form);
                 const password = String(data.get("password"));
                 const confirm = String(data.get("confirm"));
-                if (password !== confirm) {
-                  toast.error("Passwords do not match");
-                  return;
-                }
+                // if (password !== confirm) {
+                //   toast.error("Passwords do not match");
+                //   return;
+                // }
                 const email = String(data.get("email"));
                 const name = String(data.get("name"));
                 localStorage.setItem("userEmail", email);
@@ -43,7 +43,7 @@ export default function Signup() {
                 window.dispatchEvent(new Event("auth-change"));
                 toast.success("Account created. Welcome!");
                 form.reset();
-                router.push("/");
+                router.push(`/otp/${email}`);
               }}
             >
               <div className="space-y-2">
