@@ -6,10 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toastError, toastSuccess } from "@/lib/toast";
+import api from "@/lib/baseurl";
+import { useState } from "react";
+import { Loader } from "lucide-react";
 
 export default function Signup() {
   const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+
   return (
     <div className="bg-white">
       <section className="py-16">
@@ -23,27 +29,39 @@ export default function Signup() {
             </p>
             <form
               className="mt-6 space-y-4"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                const form = e.currentTarget as HTMLFormElement;
-                const data = new FormData(form);
-                const password = String(data.get("password"));
-                const confirm = String(data.get("confirm"));
-                // if (password !== confirm) {
-                //   toast.error("Passwords do not match");
-                //   return;
-                // }
-                const email = String(data.get("email"));
-                const name = String(data.get("name"));
-                localStorage.setItem("userEmail", email);
-                localStorage.setItem(
-                  "profile",
-                  JSON.stringify({ name, email }),
-                );
-                window.dispatchEvent(new Event("auth-change"));
-                toast.success("Account created. Welcome!");
-                form.reset();
-                router.push(`/otp/${email}`);
+                setLoading(true);
+                try {
+                  const form = e.currentTarget as HTMLFormElement;
+                  const data = new FormData(form);
+                  const password = String(data.get("password"));
+                  const confirm = String(data.get("confirm"));
+                  if (password !== confirm) {
+                    toastError("Passwords do not match", { position: "bottom-center" });
+                    return;
+                  }
+                  const email = String(data.get("email"));
+                  const name = String(data.get("name"));
+
+                  const res = await api.post("/users/create", { email, name, password })
+
+                  if (!res.data.success) {
+                    toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
+                    return;
+                  }
+
+                  window.dispatchEvent(new Event("auth-change"));
+                  toastSuccess("Email sent! Please check your inbox.", { position: "top-center" });
+                  form.reset();
+                  router.push(`/otp/${email}`);
+                }
+                catch (error: any) {
+                  toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
+                }
+                finally {
+                  setLoading(false);
+                }
               }}
             >
               <div className="space-y-2">
@@ -79,7 +97,7 @@ export default function Signup() {
                 </a>
               </label>
               <Button type="submit" className="w-full">
-                Create account
+                {loading ? <Loader className="animate-spin" /> : "Create account"}
               </Button>
             </form>
             <p className="mt-4 text-sm text-muted-foreground">
