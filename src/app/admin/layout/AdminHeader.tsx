@@ -67,6 +67,9 @@ export default function AdminHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => {
               document.cookie = "token=; path=/; max-age=0";
+              document.cookie = "email=; path=/; max-age=0";
+              document.cookie = "name=; path=/; max-age=0";
+              document.cookie = "role=; path=/; max-age=0";
               window.dispatchEvent(new Event("auth-change"));
               router.push("/login");
             }} className="text-destructive">

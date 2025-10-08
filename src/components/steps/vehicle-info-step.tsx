@@ -64,21 +64,21 @@ export default function VehicleInfoStep({ formData, updateFormData }: StepProps)
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="licensePlate">License Plate Number</Label>
+          <Label htmlFor="vehiclePlate">License Plate Number</Label>
           <Input
-            id="licensePlate"
+            id="vehiclePlate"
             placeholder="ABC1234"
-            value={formData.licensePlate || ""}
-            onChange={(e) => handleChange("licensePlate", e.target.value)}
+            value={formData.vehiclePlate || ""}
+            onChange={(e) => handleChange("vehiclePlate", e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="plateState">State</Label>
+          <Label htmlFor="vehicleState">State</Label>
           <Input
-            id="plateState"
+            id="vehicleState"
             placeholder="CA"
-            value={formData.plateState || ""}
-            onChange={(e) => handleChange("plateState", e.target.value)}
+            value={formData.vehicleState || ""}
+            onChange={(e) => handleChange("vehicleState", e.target.value)}
           />
         </div>
       </div>

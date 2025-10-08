@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, ChevronRight, Check, Download } from "lucide-react"
+import { ChevronLeft, ChevronRight, Check, Download, Loader } from "lucide-react"
 import ApplicantInfoStep from "@/components/steps/applicant-info-step"
 import PropertyDetailsStep from "@/components/steps/property-details-step"
 import ResidentialHistoryStep from "@/components/steps/residential-history-step"
@@ -16,6 +17,9 @@ import BackgroundCheckStep from "@/components/steps/background-check-step"
 import ReferencesStep from "@/components/steps/references-step"
 import AuthorizationStep from "@/components/steps/authorization-step"
 import UploadsStep from "@/components/steps/uploads-step"
+import api from "@/lib/baseurl"
+import { toastError, toastSuccess } from "@/lib/toast"
+import { useRouter } from "next/navigation"
 
 
 const steps = [
@@ -35,7 +39,12 @@ const steps = [
 export default function RentalApplicationWizard() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({})
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isNext, setIsNext] = useState(true);
+  const router = useRouter()
+
 
   const progress = (currentStep / steps.length) * 100
   const CurrentStepComponent = steps[currentStep - 1].component
@@ -56,20 +65,69 @@ export default function RentalApplicationWizard() {
     setFormData({ ...formData, ...data })
   }
 
-   console.log(formData)
-
   const handleSubmit = async () => {
-    setIsGeneratingPDF(true)
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
     try {
-      const { generatePDF } = await import("@/lib/pdf-generator")
-      await generatePDF(formData)
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      alert("There was an error generating your PDF. Please try again.")
+      const form = new FormData();
+      const bodyData: Record<string, any> = {}; // ✅ define this
+
+      // List of file fields
+      const fileFields = [
+        "proofEmploymentImageUrl",
+        "govtIdImageUrl",
+        "payStubImageUrl",
+        "rentalImageUrl",
+        "petRecordImageUrl",
+      ];
+
+      // Separate JSON and file fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (fileFields.includes(key)) {
+          if (value instanceof File) {
+            form.append(key, value, value.name);
+          } else {
+            console.warn(`Skipping ${key}: not a File instance`, value);
+          }
+        } else {
+          bodyData[key] = value;
+        }
+      });
+
+      // ✅ Append JSON string for non-file data
+      form.append("bodyData", JSON.stringify(bodyData));
+
+      // // Debug log (you should see files + bodyData)
+      // console.log("🧾 Final FormData:");
+      // for (let pair of form.entries()) {
+      //     const [key, value] = pair;
+      //     if (value instanceof File) {
+      //       console.log(key, value.name, value.type, value.size);
+      //     } else {
+      //       console.log(key, value);
+      //     }
+      // }
+
+      // ✅ Submit via axios
+      const response = await api.put("/booking/apply-for-rent", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setSuccess("Application submitted successfully!");
+      console.log("✅ Server Response:", response.data);
+      toastSuccess("✅ Your application has been submitted successfully!");
+      router.push("/")
+    } catch (err: any) {
+      toastError("❌ Error submitting, please fullly fill the form and try again.");
+      setError(err?.response?.data?.message || err?.message || "Submission failed");
     } finally {
-      setIsGeneratingPDF(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -107,7 +165,7 @@ export default function RentalApplicationWizard() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <CurrentStepComponent formData={formData} updateFormData={updateFormData} />
+            <CurrentStepComponent formData={formData} updateFormData={updateFormData} setIsNext={setIsNext} />
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-6 border-t">
@@ -124,23 +182,24 @@ export default function RentalApplicationWizard() {
               {currentStep === steps.length ? (
                 <Button
                   onClick={handleSubmit}
-                  disabled={isGeneratingPDF}
                   className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={loading}
                 >
-                  {isGeneratingPDF ? "Generating PDF..." : "Submit & Download PDF"}
-                  {isGeneratingPDF ? (
-                    <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
+                  {loading ?
+                    <Loader className="animate-spin" />
+                    :
+                    "Submit Application"
+                  }
                 </Button>
               ) : (
-                <Button onClick={handleNext} className="gap-2">
+                <Button disabled={!isNext} onClick={handleNext} className="gap-2">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               )}
             </div>
+            {error && <div className="text-red-500 mt-2">{error}</div>}
+            {success && <div className="text-green-500 mt-2">{success}</div>}
           </CardContent>
         </Card>
       </div>

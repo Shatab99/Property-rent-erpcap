@@ -43,26 +43,26 @@ export default function ResidentialHistoryStep({ formData, updateFormData }: Ste
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="currentRent">Monthly Rent Paid *</Label>
+              <Label htmlFor="monthlyRentPaid">Monthly Rent Paid *</Label>
               <Input
-                id="currentRent"
+                id="monthlyRentPaid"
                 type="number"
                 placeholder="$1,200"
                 required
-                value={formData.currentRent || ""}
-                onChange={(e) => handleChange("currentRent", e.target.value)}
+                value={formData.monthlyRentPaid || ""}
+                onChange={(e) => handleChange("monthlyRentPaid", e.target.value)}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reasonLeaving">Reason for Leaving *</Label>
+            <Label htmlFor="reasonForLeaving">Reason for Leaving *</Label>
             <Textarea
-              id="reasonLeaving"
+              id="reasonForLeaving"
               placeholder="Relocating for work"
               required
-              value={formData.reasonLeaving || ""}
-              onChange={(e) => handleChange("reasonLeaving", e.target.value)}
+              value={formData.reasonForLeaving || ""}
+              onChange={(e) => handleChange("reasonForLeaving", e.target.value)}
             />
           </div>
 
@@ -85,45 +85,6 @@ export default function ResidentialHistoryStep({ formData, updateFormData }: Ste
                 required
                 value={formData.landlordContact || ""}
                 onChange={(e) => handleChange("landlordContact", e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Previous Residence (Optional)</h3>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="previousAddress">Previous Address</Label>
-            <Input
-              id="previousAddress"
-              placeholder="789 Elm Street"
-              value={formData.previousAddress || ""}
-              onChange={(e) => handleChange("previousAddress", e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="previousStay">Length of Stay</Label>
-              <Input
-                id="previousStay"
-                placeholder="1 year 6 months"
-                value={formData.previousStay || ""}
-                onChange={(e) => handleChange("previousStay", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="previousRent">Monthly Rent Paid</Label>
-              <Input
-                id="previousRent"
-                type="number"
-                placeholder="$1,000"
-                value={formData.previousRent || ""}
-                onChange={(e) => handleChange("previousRent", e.target.value)}
               />
             </div>
           </div>

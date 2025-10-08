@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useEffect } from "react"
 
 interface StepProps {
   formData: any
@@ -11,9 +12,19 @@ interface StepProps {
 }
 
 export default function BackgroundCheckStep({ formData, updateFormData }: StepProps) {
+
+  useEffect(()=>{
+    updateFormData({
+      evicted: formData.evicted || "no",
+      brokenLease: formData.brokenLease || "no",
+      conviction: formData.conviction || "no",
+    })
+  },[])
+
   const handleChange = (field: string, value: any) => {
     updateFormData({ [field]: value })
   }
+
 
   return (
     <div className="space-y-6">
@@ -83,23 +94,6 @@ export default function BackgroundCheckStep({ formData, updateFormData }: StepPr
             value={formData.convictionExplain || ""}
             onChange={(e) => handleChange("convictionExplain", e.target.value)}
           />
-        </div>
-      </div>
-
-      <div className="flex items-start space-x-3 p-4 bg-muted rounded-lg">
-        <Checkbox
-          id="backgroundConsent"
-          checked={formData.backgroundConsent || false}
-          onCheckedChange={(checked) => handleChange("backgroundConsent", checked)}
-        />
-        <div className="space-y-1">
-          <Label htmlFor="backgroundConsent" className="text-sm font-medium leading-none">
-            I consent to a background check *
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            By checking this box, you authorize us to conduct a background check as part of the rental application
-            process.
-          </p>
         </div>
       </div>
     </div>

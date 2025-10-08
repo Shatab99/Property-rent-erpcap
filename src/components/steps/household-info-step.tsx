@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
+import { useEffect } from "react"
 
 interface StepProps {
   formData: any
@@ -11,6 +12,13 @@ interface StepProps {
 }
 
 export default function HouseholdInfoStep({ formData, updateFormData }: StepProps) {
+
+  useEffect(()=>{
+    updateFormData({
+      pets: formData.pets || false,
+    })
+  },[])
+
   const handleChange = (field: string, value: any) => {
     updateFormData({ [field]: value })
   }
@@ -33,31 +41,31 @@ export default function HouseholdInfoStep({ formData, updateFormData }: StepProp
         <Label>Additional Occupant 1</Label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="occupant1Name">Full Name</Label>
+            <Label htmlFor="additionalOccupantName">Full Name</Label>
             <Input
-              id="occupant1Name"
+              id="additionalOccupantName"
               placeholder="Sarah Doe"
-              value={formData.occupant1Name || ""}
-              onChange={(e) => handleChange("occupant1Name", e.target.value)}
+              value={formData.additionalOccupantName || ""}
+              onChange={(e) => handleChange("additionalOccupantName", e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="occupant1Age">Age</Label>
+            <Label htmlFor="additionalOccupantAge">Age</Label>
             <Input
-              id="occupant1Age"
+              id="additionalOccupantAge"
               type="number"
               placeholder="28"
-              value={formData.occupant1Age || ""}
-              onChange={(e) => handleChange("occupant1Age", e.target.value)}
+              value={formData.additionalOccupantAge || ""}
+              onChange={(e) => handleChange("additionalOccupantAge", e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="occupant1Relation">Relationship</Label>
+            <Label htmlFor="relationshipWithApplicant">Relationship</Label>
             <Input
-              id="occupant1Relation"
+              id="relationshipWithApplicant"
               placeholder="Spouse"
-              value={formData.occupant1Relation || ""}
-              onChange={(e) => handleChange("occupant1Relation", e.target.value)}
+              value={formData.relationshipWithApplicant || ""}
+              onChange={(e) => handleChange("relationshipWithApplicant", e.target.value)}
             />
           </div>
         </div>
@@ -67,13 +75,21 @@ export default function HouseholdInfoStep({ formData, updateFormData }: StepProp
 
       <div className="space-y-4">
         <Label>Do you have any pets? *</Label>
-        <RadioGroup value={formData.hasPets || "no"} onValueChange={(value) => handleChange("hasPets", value)}>
+        <RadioGroup value={formData.pets ? "yes" : "no"} onValueChange={(value) => handleChange("pets", value === "yes")}>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="yes" id="pets-yes" />
+            <RadioGroupItem
+              value="yes"
+              id="pets-yes"
+              className="checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary"
+            />
             <Label htmlFor="pets-yes">Yes</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="no" id="pets-no" />
+            <RadioGroupItem
+              value="no"
+              id="pets-no"
+              className="checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary"
+            />
             <Label htmlFor="pets-no">No</Label>
           </div>
         </RadioGroup>

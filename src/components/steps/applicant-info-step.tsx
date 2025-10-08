@@ -18,33 +18,14 @@ export default function ApplicantInfoStep({ formData, updateFormData }: StepProp
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First Name *</Label>
+        <div className="space-y-2 md:col-span-2 lg:col-span-3">
+          <Label htmlFor="fullName">Full Name</Label>
           <Input
-            id="firstName"
-            placeholder="John"
+            id="fullName"
+            placeholder="John Doe"
             required
-            value={formData.firstName || ""}
-            onChange={(e) => handleChange("firstName", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="middleName">Middle Name</Label>
-          <Input
-            id="middleName"
-            placeholder="Michael"
-            value={formData.middleName || ""}
-            onChange={(e) => handleChange("middleName", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name *</Label>
-          <Input
-            id="lastName"
-            placeholder="Doe"
-            required
-            value={formData.lastName || ""}
-            onChange={(e) => handleChange("lastName", e.target.value)}
+            value={formData.fullName || ""}
+            onChange={(e) => handleChange("fullName", e.target.value)}
           />
         </div>
       </div>
@@ -106,26 +87,6 @@ export default function ApplicantInfoStep({ formData, updateFormData }: StepProp
           value={formData.driverLicense || ""}
           onChange={(e) => handleChange("driverLicense", e.target.value)}
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="photoId">Upload Photo ID *</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="photoId"
-            type="file"
-            accept="image/*,.pdf"
-            className="flex-1"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleChange("photoId", file.name)
-            }}
-          />
-          <Button variant="outline" size="icon">
-            <Upload className="h-4 w-4" />
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
       </div>
     </div>
   )

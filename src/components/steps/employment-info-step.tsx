@@ -88,22 +88,17 @@ export default function EmploymentInfoStep({ formData, updateFormData }: StepPro
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="incomeProof">Upload Pay Stubs / Offer Letter / Bank Statements *</Label>
+        <Label htmlFor="proofEmploymentImageUrl">Upload Pay Stubs / Offer Letter / Bank Statements *</Label>
         <div className="flex items-center gap-2">
           <Input
-            id="incomeProof"
+            id="proofEmploymentImageUrl"
             type="file"
             accept=".pdf,.jpg,.png"
             multiple
             className="flex-1"
             onChange={(e) => {
-              const files = e.target.files
-              if (files) {
-                const fileNames = Array.from(files)
-                  .map((f) => f.name)
-                  .join(", ")
-                handleChange("incomeProof", fileNames)
-              }
+              const files = e.target.files?.[0]
+              if (files) handleChange("proofEmploymentImageUrl", files) // ✅ store File
             }}
           />
           <Button variant="outline" size="icon">

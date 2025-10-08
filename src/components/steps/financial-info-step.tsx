@@ -17,25 +17,6 @@ export default function FinancialInfoStep({ formData, updateFormData }: StepProp
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start space-x-3 p-4 bg-muted rounded-lg">
-        <Checkbox
-          id="creditConsent"
-          checked={formData.creditConsent || false}
-          onCheckedChange={(checked) => handleChange("creditConsent", checked)}
-        />
-        <div className="space-y-1">
-          <Label
-            htmlFor="creditConsent"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            I consent to a credit check *
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            By checking this box, you authorize us to obtain your credit report for rental application purposes.
-          </p>
-        </div>
-      </div>
-
       <div className="space-y-2">
         <Label htmlFor="creditScore">Credit Score (Optional)</Label>
         <Input
