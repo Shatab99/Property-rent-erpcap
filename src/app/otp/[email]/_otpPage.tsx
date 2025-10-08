@@ -53,7 +53,7 @@ export function OTPPage({ email }: { email: string }) {
                 </InputOTPGroup>
             </InputOTP>
             <div className="text-sm text-muted-foreground flex justify-between max-w-xs w-full px-2">
-                <p>Didn't receive the code?</p>
+                <p>{`Didn't`} receive the code?</p>
                 <button className="text-blue-500 hover:underline" onClick={async () => {
                     const res = await api.post("/auth/resend-otp", { email })
                     if (!res.data.success) {

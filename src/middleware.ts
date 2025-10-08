@@ -2,10 +2,11 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
+  const role = request.cookies.get("role")?.value;
   const { pathname } = request.nextUrl;
 
 
-  if (token === "admin@gmail.com") {
+  if (role === "ADMIN") {
     if (!pathname.startsWith("/admin")) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin";

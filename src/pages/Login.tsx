@@ -5,10 +5,51 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import api from "@/lib/baseurl";
+import { useEffect, useState } from "react";
+import { toastError } from "@/lib/toast";
+import { Loader } from "lucide-react";
 
 export default function Login() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="));
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const form = e.currentTarget as HTMLFormElement;
+      const data = new FormData(form);
+      const email = String(data.get("email"));
+      const password = String(data.get("password"));
+      const res = await api.post("/auth/login", { email, password });
+      const next = (new URLSearchParams(window.location.search)).get("next");
+      if (!res.data.success) {
+        toastError("Invalid credentials");
+        return;
+      }
+      document.cookie = `token=${res.data.data.accessToken}; path=/`;
+      document.cookie = `email=${email}; path=/`;
+      document.cookie = `name=${res.data.data.name}; path=/`;
+      document.cookie = `role=${res.data.data.role}; path=/`;
+      form.reset();
+      router.push(res.data.data.role === "ADMIN" ? "/admin" : next || "/");
+    }
+    catch (error) {
+      toastError("Invalid credentials, please try again!");
+    }
+    finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white">
       <section className="py-16">
@@ -20,20 +61,7 @@ export default function Login() {
             </p>
             <form
               className="mt-6 space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.currentTarget as HTMLFormElement;
-                const data = new FormData(form);
-                const email = String(data.get("email"));
-                document.cookie = `token=${email}; path=/`;
-                window.dispatchEvent(new Event("auth-change"));
-                toast.success(`Logged in as ${email}`);
-                const next = new URLSearchParams(window.location.search).get(
-                  "next",
-                );
-                form.reset();
-                router.push(email === "admin@gmail.com" ? "/admin" : next || "/");
-              }}
+              onSubmit={handleLogin}
             >
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -63,8 +91,8 @@ export default function Login() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full">
-                Log in
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader className="animate-spin" /> : "Log in"}
               </Button>
             </form>
             <p className="mt-4 text-sm text-muted-foreground">
@@ -79,3 +107,4 @@ export default function Login() {
     </div>
   );
 }
+

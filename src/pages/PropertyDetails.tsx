@@ -94,9 +94,8 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     <button
                                         key={i}
                                         onClick={() => setActive(i)}
-                                        className={`aspect-[4/3] overflow-hidden rounded-md ring-2 ${
-                                            active === i ? "ring-primary" : "ring-transparent"
-                                        }`}
+                                        className={`aspect-[4/3] overflow-hidden rounded-md ring-2 ${active === i ? "ring-primary" : "ring-transparent"
+                                            }`}
                                     >
                                         <Image
                                             width={400}
@@ -203,14 +202,11 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     {property.sqft.toLocaleString()} sqft
                                 </div>
                             </div>
-                            <div className="mt-4 flex gap-2">
+                            <Link href={`/application/${property.id}`} className="mt-4 flex gap-2">
                                 <Button className="flex-1">
-                                    <CalendarDays className="mr-2" size={16} /> Schedule tour
+                                    Apply for rent
                                 </Button>
-                                <Button variant="outline" className="flex-1">
-                                    Apply now
-                                </Button>
-                            </div>
+                            </Link>
                             <form
                                 className="mt-6 space-y-3"
                                 onSubmit={(e) => {
@@ -223,7 +219,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                         const ids: string[] = JSON.parse(raw);
                                         if (!ids.includes(property.id)) ids.push(property.id);
                                         localStorage.setItem("contacted", JSON.stringify(ids));
-                                    } catch {}
+                                    } catch { }
                                     toast.success(`Thanks ${name}, we will reach out soon.`);
                                     form.reset();
                                     window.dispatchEvent(new Event("contacted-change"));

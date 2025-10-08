@@ -10,6 +10,7 @@ import { toastError, toastSuccess } from "@/lib/toast";
 import api from "@/lib/baseurl";
 import { useState } from "react";
 import { Loader } from "lucide-react";
+import { Separator } from "@/components/ui/separator"
 
 export default function Signup() {
   const router = useRouter();
@@ -104,6 +105,16 @@ export default function Signup() {
               Already have an account?{" "}
               <Link href="/login" className="text-primary hover:underline">
                 Log in
+              </Link>
+            </p>
+            <Separator className="my-3" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              Or sign up as a landlord{" "}
+              <Link
+                href="/signup/landlord"
+                className="text-primary hover:underline"
+              >
+                click here
               </Link>
             </p>
           </div>

@@ -21,21 +21,23 @@ export default function Header() {
   const [email, setEmail] = useState<string | null>(null);
   const router = useRouter()
 
-
-
   useEffect(() => {
-
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null;
-    const sync = () => setEmail(document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null);
+    // Sync email state from cookie
+    const sync = () => {
+      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null;
+      setEmail(token);
+    };
     sync();
+
+    // Listen for custom auth-change event and storage changes
     window.addEventListener("storage", sync);
-    window.addEventListener("auth-change", sync as any);
+    window.addEventListener("auth-change", sync);
 
     return () => {
       window.removeEventListener("storage", sync);
-      window.removeEventListener("auth-change", sync as any);
+      window.removeEventListener("auth-change", sync);
     };
-  }, []);
+  }, [pathname]);
 
   console.log(email)
 
