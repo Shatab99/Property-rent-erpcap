@@ -59,6 +59,7 @@ export default function RentalApplicationWizard() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     }
+    setIsNext(true);
   }
 
   const updateFormData = (data: any) => {
@@ -174,6 +175,7 @@ export default function RentalApplicationWizard() {
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
                 className="gap-2 bg-transparent"
+
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
