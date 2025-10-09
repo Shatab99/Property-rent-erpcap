@@ -10,6 +10,7 @@ import {
   Settings,
   UserPlus,
   UserCheck,
+  MessageSquareCode,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +41,11 @@ const menuItems = [
     title: "Users",
     url: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Applications",
+    url: "/admin/applications",
+    icon: MessageSquareCode,
   },
   {
     title: "Inquiries",

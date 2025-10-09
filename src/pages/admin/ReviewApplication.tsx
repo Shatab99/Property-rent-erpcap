@@ -20,157 +20,236 @@ import {
   Shield,
   Phone,
   Upload,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import api, { baseURL } from "@/lib/baseurl"
+import { PropertyApplication } from "@/lib/applictionTypes"
+import Image from "next/image"
+import { toastError, toastSuccess } from "@/lib/toast"
 
-export default function ReviewApplication() {
-  const searchParams = useSearchParams()
+export default function ReviewApplication({ id, token }: { id: string, token: string }) {
 
-  // In a real app, you'd fetch this data from a database or state management
-  // For now, we'll use mock data structure
+  const [application, setApplication] = useState<PropertyApplication | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [btnLoading, setBtnLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchApplication = async () => {
+    try {
+      const res = await fetch(`${baseURL}/admin/property-application/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        setApplication(data.data)
+      } else {
+        setError("Failed to load application.")
+      }
+    } catch (err) {
+      setError("Something went wrong while fetching data.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!id) return
+    // const fetchApplication = async () => {
+    //   try {
+    //     const res = await fetch(`${baseURL}/admin/property-application/${id}`, {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       }
+    //     })
+    //     const data = await res.json()
+    //     if (data.success) {
+    //       setApplication(data.data)
+    //     } else {
+    //       setError("Failed to load application.")
+    //     }
+    //   } catch (err) {
+    //     setError("Something went wrong while fetching data.")
+    //   } finally {
+    //     setLoading(false)
+    //   }
+    // }
+    fetchApplication()
+  }, [id])
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+
   const applicationData = {
-    status: "pending", // pending, approved, rejected
-    submittedDate: new Date().toLocaleDateString(),
-    applicationId: "APP-2025-001",
+    status: application?.status || "PENDING",
+    submittedDate: application?.appliedAt || "N/A",
+    applicationId: application?.id,
 
     // Applicant Info
     applicantInfo: {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      phone: "(555) 123-4567",
-      dateOfBirth: "01/15/1990",
-      ssn: "***-**-1234",
-      driversLicense: "D1234567",
-      driversLicenseState: "CA",
+      fullName: application?.fullName || "N/A",
+      email: application?.email || "N/A",
+      phone: application?.phone || "N/A",
+      dateOfBirth: application?.dob || "N/A",
+      ssn: application?.ssn || "N/A",
+      driversLicense: application?.driverLicense || "N/A",
     },
 
     // Property Details
     propertyDetails: {
-      propertyAddress: "123 Main Street, Apt 4B",
-      city: "San Francisco",
-      state: "CA",
-      zipCode: "94102",
-      desiredMoveInDate: "06/01/2025",
-      leaseTerm: "12 months",
-      monthlyRent: "$2,500",
+      propertyAddress: application?.propertyAddress,
+      desiredMoveInDate: application?.moveInDate,
+      leaseTerm: application?.leaseTerm,
+      monthlyRent: application?.monthlyRent,
     },
 
     // Residential History
     residentialHistory: [
       {
-        address: "456 Oak Avenue, Los Angeles, CA 90001",
-        moveInDate: "01/2022",
-        moveOutDate: "Present",
-        monthlyRent: "$2,200",
-        landlordName: "Jane Smith",
-        landlordPhone: "(555) 987-6543",
-        reasonForLeaving: "Relocating for work",
-      },
-      {
-        address: "789 Pine Street, San Diego, CA 92101",
-        moveInDate: "06/2019",
-        moveOutDate: "12/2021",
-        monthlyRent: "$1,800",
-        landlordName: "Bob Johnson",
-        landlordPhone: "(555) 456-7890",
-        reasonForLeaving: "Job relocation",
-      },
+        address: application?.currentAddress || "N/A",
+        moveInDate: application?.moveInDate || "N/A",
+        monthlyRent: application?.monthlyRent || "N/A",
+        landlordName: application?.landlordName || "N/A",
+        landlordPhone: application?.landlordContact || "N/A",
+        reasonForLeaving: application?.reasonForLeaving || "N/A",
+      }
     ],
 
     // Employment Info
     employmentInfo: {
       employmentStatus: "Employed",
-      employerName: "Tech Corp Inc.",
-      jobTitle: "Software Engineer",
-      employmentDuration: "3 years",
-      supervisorName: "Sarah Williams",
-      supervisorPhone: "(555) 111-2222",
-      monthlyIncome: "$8,500",
-      additionalIncome: "$1,000",
-      additionalIncomeSource: "Freelance consulting",
+      employerName: application?.employerName || "N/A",
+      jobTitle: application?.jobTitle || "N/A",
+      employmentDuration: application?.lengthEmployment || "N/A",
+      supervisorName: application?.referenceName || "N/A",
+      supervisorPhone: application?.referenceContact || "N/A",
+      monthlyIncome: application?.monthlyIncome
     },
 
     // Financial Info
     financialInfo: {
-      bankName: "Chase Bank",
-      accountType: "Checking",
-      accountNumber: "****1234",
-      creditScore: "750",
-      bankruptcy: "No",
-      bankruptcyDetails: "",
-      outstandingDebts: "$15,000",
-      debtDetails: "Student loans",
+      bankName: application?.bankName || "N/A",
+      accountType: application?.accountType || "N/A",
+      creditScore: application?.creditScore || "N/A",
     },
 
     // Household Info
     householdInfo: {
-      numberOfOccupants: "2",
-      occupants: [{ name: "Jane Doe", relationship: "Spouse", age: "28" }],
-      pets: "Yes",
-      petDetails: "1 dog (Golden Retriever, 3 years old, 60 lbs)",
-      smoking: "No",
+      numberOfOccupants: application?.numOccupants || "N/A",
+      occupants: [{ name: application?.additionalOccupantName, relationship: application?.relationshipWithApplicant, age: application?.additionalOccupantAge }],
+      pets: application?.pets ? "Yes" : "No",
+      petDetails: application?.petDeposit || "N/A",
+      petType: application?.petType || "N/A",
+      petWeight: application?.petWeight || "N/A",
     },
 
     // Vehicle Info
     vehicles: [
       {
-        make: "Toyota",
-        model: "Camry",
-        year: "2020",
-        color: "Silver",
-        licensePlate: "ABC1234",
-        state: "CA",
+        make: application?.vehicleMake || "N/A",
+        model: application?.vehicleModel || "N/A",
+        year: application?.vehicleYear || "N/A",
+        color: application?.vehicleColor || "N/A",
+        licensePlate: application?.vehiclePlate || "N/A",
+        state: application?.vehicleState || "N/A",
       },
     ],
 
     // Background Check
     backgroundCheck: {
-      criminalHistory: "No",
-      criminalDetails: "",
-      evictionHistory: "No",
-      evictionDetails: "",
-      consentToBackgroundCheck: "Yes",
+      criminalHistory: application?.conviction || "N/A",
+      criminalDetails: application?.convictionExplain || "N/A",
+      evictionHistory: application?.evicted || "N/A",
+      evictionDetails: application?.evictionExplain || "N/A",
+      brokenLease: application?.brokenLease || "N/A",
+      leaseExplain: application?.leaseExplain || "N/A",
     },
 
     // References
     references: [
       {
-        name: "Michael Brown",
-        relationship: "Former Colleague",
-        phone: "(555) 222-3333",
-        email: "michael.brown@example.com",
-      },
-      {
-        name: "Emily Davis",
-        relationship: "Friend",
-        phone: "(555) 444-5555",
-        email: "emily.davis@example.com",
-      },
+        name: application?.referenceName,
+        relationship: application?.relationshipWithReference || "N/A",
+        phone: application?.referenceContact || "N/A",
+        email: application?.referenceEmail || "N/A",
+      }
     ],
 
     // Authorization
     authorization: {
-      signature: "John Doe",
-      date: "10/08/2025",
+      signature: application?.digitalSignature || "N/A",
+      date: application?.appliedAt || "N/A",
       consentToCredit: "Yes",
       consentToContact: "Yes",
     },
 
     // Uploads
     uploads: {
-      idDocument: "drivers_license.pdf",
-      proofOfIncome: "pay_stubs.pdf",
-      bankStatements: "bank_statement.pdf",
-      references: "reference_letters.pdf",
+      idDocument: application?.govtIdImageUrl,
+      proofOfIncome: application?.payStubImageUrl,
+      bankStatements: application?.proofEmploymentImageUrl,
+      rentalImage: application?.rentalImageUrl,
+      petRecords: application?.petRecordImageUrl,
     },
+  }
+
+  const handleApprove = async () => {
+    if (!id) return
+    setBtnLoading(true)
+    try {
+      const res = await api.put(`${baseURL}/admin/update-application/${id}`, {
+        status: "APPROVED"
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      toastSuccess("Application approved successfully.")
+    }
+    catch {
+      toastError("Failed to approve application.")
+    }
+    finally {
+      setBtnLoading(false)
+      fetchApplication()
+    }
+  }
+
+
+  const handleReject = async () => {
+    if (!id) return
+    setBtnLoading(true)
+    try {
+      const res = await api.put(`${baseURL}/admin/update-application/${id}`, {
+        status: "REJECTED"
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      toastSuccess("Application rejected successfully.")
+    }
+    catch {
+      toastError("Failed to reject application.")
+    }
+    finally {
+      setBtnLoading(false)
+      fetchApplication()
+    }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "approved":
+      case "APPROVED":
         return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Approved</Badge>
-      case "rejected":
+      case "REJECTED":
         return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Rejected</Badge>
       default:
         return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending Review</Badge>
@@ -200,578 +279,595 @@ export default function ReviewApplication() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 mb-8">
-          <Button className="gap-2">
-            <Download className="h-4 w-4" />
-            Download PDF
+        {/* Admin Actions */}
+        <div className="ml-auto flex items-center gap-3">
+          <Button
+            onClick={handleApprove}
+            disabled={btnLoading || applicationData.status === "APPROVED"}
+            variant="outline"
+            className="gap-2 border-green-500/20 text-green-500 hover:bg-green-500/10 bg-transparent"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            Approve
           </Button>
-          <Button variant="outline" className="gap-2 bg-transparent" asChild>
-            <Link href="/">
-              <Edit className="h-4 w-4" />
-              Edit Application
-            </Link>
+          <Button
+            onClick={handleReject}
+            disabled={btnLoading || applicationData.status === "REJECTED"}
+            variant="outline"
+            className="gap-2 border-red-500/20 text-red-500 hover:bg-red-500/10 bg-transparent"
+          >
+            Reject
           </Button>
-
-          {/* Admin Actions */}
-          <div className="ml-auto flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="gap-2 border-green-500/20 text-green-500 hover:bg-green-500/10 bg-transparent"
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              Approve
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2 border-red-500/20 text-red-500 hover:bg-red-500/10 bg-transparent"
-            >
-              Reject
-            </Button>
-          </div>
         </div>
+      </div>
 
-        <div className="space-y-6">
-          {/* Applicant Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Applicant Information</CardTitle>
-                  <CardDescription>Personal details and contact information</CardDescription>
-                </div>
+      <div className="space-y-6">
+        {/* Applicant Information */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Full Name</TableCell>
-                    <TableCell>
-                      {applicationData.applicantInfo.firstName} {applicationData.applicantInfo.lastName}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Email</TableCell>
-                    <TableCell>{applicationData.applicantInfo.email}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Phone</TableCell>
-                    <TableCell>{applicationData.applicantInfo.phone}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Date of Birth</TableCell>
-                    <TableCell>{applicationData.applicantInfo.dateOfBirth}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">SSN</TableCell>
-                    <TableCell className="font-mono">{applicationData.applicantInfo.ssn}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{`Driver's`} License</TableCell>
-                    <TableCell>
-                      {applicationData.applicantInfo.driversLicense} (
-                      {applicationData.applicantInfo.driversLicenseState})
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+              <div>
+                <CardTitle>Applicant Information</CardTitle>
+                <CardDescription>Personal details and contact information</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Full Name</TableCell>
+                  <TableCell>
+                    {applicationData.applicantInfo.fullName}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Email</TableCell>
+                  <TableCell>{applicationData.applicantInfo.email}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Phone</TableCell>
+                  <TableCell>{applicationData.applicantInfo.phone}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Date of Birth</TableCell>
+                  <TableCell>{applicationData.applicantInfo.dateOfBirth}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">SSN</TableCell>
+                  <TableCell className="font-mono">{applicationData.applicantInfo.ssn}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">{`Driver's`} License</TableCell>
+                  <TableCell>
+                    {applicationData.applicantInfo.driversLicense}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-          {/* Property Details */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Home className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Property Details</CardTitle>
-                  <CardDescription>Desired property and lease information</CardDescription>
-                </div>
+        {/* Property Details */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Home className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Property Address</TableCell>
-                    <TableCell>{applicationData.propertyDetails.propertyAddress}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">City, State, ZIP</TableCell>
-                    <TableCell>
-                      {applicationData.propertyDetails.city}, {applicationData.propertyDetails.state}{" "}
-                      {applicationData.propertyDetails.zipCode}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Desired Move-In Date</TableCell>
-                    <TableCell>{applicationData.propertyDetails.desiredMoveInDate}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Lease Term</TableCell>
-                    <TableCell>{applicationData.propertyDetails.leaseTerm}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Monthly Rent</TableCell>
-                    <TableCell className="text-lg font-semibold">
-                      {applicationData.propertyDetails.monthlyRent}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+              <div>
+                <CardTitle>Property Details</CardTitle>
+                <CardDescription>Desired property and lease information</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Property Address</TableCell>
+                  <TableCell>{applicationData.propertyDetails.propertyAddress}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Desired Move-In Date</TableCell>
+                  <TableCell>{applicationData.propertyDetails.desiredMoveInDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Lease Term</TableCell>
+                  <TableCell>{applicationData.propertyDetails.leaseTerm}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Monthly Rent</TableCell>
+                  <TableCell className="text-lg font-semibold">
+                    {applicationData.propertyDetails.monthlyRent}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-          {/* Residential History */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Home className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Residential History</CardTitle>
-                  <CardDescription>Previous addresses and landlord information</CardDescription>
-                </div>
+        {/* Residential History */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Home className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {applicationData.residentialHistory.map((residence, index) => (
-                  <div key={index}>
-                    {index > 0 && <Separator className="my-6" />}
-                    <div className="mb-3">
-                      <h4 className="font-semibold text-foreground mb-1">Residence {index + 1}</h4>
-                      <p className="text-sm text-muted-foreground">{residence.address}</p>
-                    </div>
-                    <Table>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium w-1/3">Duration</TableCell>
-                          <TableCell>
-                            {residence.moveInDate} - {residence.moveOutDate}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Monthly Rent</TableCell>
-                          <TableCell>{residence.monthlyRent}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Landlord</TableCell>
-                          <TableCell>
-                            {residence.landlordName} - {residence.landlordPhone}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Reason for Leaving</TableCell>
-                          <TableCell>{residence.reasonForLeaving}</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-                ))}
+              <div>
+                <CardTitle>Residential History</CardTitle>
+                <CardDescription>Previous addresses and landlord information</CardDescription>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Employment & Income */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Employment & Income</CardTitle>
-                  <CardDescription>Current employment and income details</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Employment Status</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.employmentInfo.employmentStatus}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Employer</TableCell>
-                    <TableCell>{applicationData.employmentInfo.employerName}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Job Title</TableCell>
-                    <TableCell>{applicationData.employmentInfo.jobTitle}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Employment Duration</TableCell>
-                    <TableCell>{applicationData.employmentInfo.employmentDuration}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Supervisor</TableCell>
-                    <TableCell>
-                      {applicationData.employmentInfo.supervisorName} - {applicationData.employmentInfo.supervisorPhone}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Monthly Income</TableCell>
-                    <TableCell className="text-lg font-semibold text-green-500">
-                      {applicationData.employmentInfo.monthlyIncome}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Additional Income</TableCell>
-                    <TableCell>
-                      {applicationData.employmentInfo.additionalIncome} (
-                      {applicationData.employmentInfo.additionalIncomeSource})
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Financial Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Financial Information</CardTitle>
-                  <CardDescription>Banking and credit details</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Bank Name</TableCell>
-                    <TableCell>{applicationData.financialInfo.bankName}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Account Type</TableCell>
-                    <TableCell>{applicationData.financialInfo.accountType}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Account Number</TableCell>
-                    <TableCell className="font-mono">{applicationData.financialInfo.accountNumber}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Credit Score</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.financialInfo.creditScore}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Bankruptcy History</TableCell>
-                    <TableCell>{applicationData.financialInfo.bankruptcy}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Outstanding Debts</TableCell>
-                    <TableCell>
-                      {applicationData.financialInfo.outstandingDebts} - {applicationData.financialInfo.debtDetails}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Household Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Household Information</CardTitle>
-                  <CardDescription>Occupants and pets</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Number of Occupants</TableCell>
-                    <TableCell>{applicationData.householdInfo.numberOfOccupants}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Pets</TableCell>
-                    <TableCell>{applicationData.householdInfo.pets}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Pet Details</TableCell>
-                    <TableCell>{applicationData.householdInfo.petDetails}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Smoking</TableCell>
-                    <TableCell>{applicationData.householdInfo.smoking}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-
-              {applicationData.householdInfo.occupants.length > 0 && (
-                <>
-                  <Separator className="my-6" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {applicationData.residentialHistory.map((residence, index) => (
+                <div key={index}>
+                  {index > 0 && <Separator className="my-6" />}
                   <div className="mb-3">
-                    <h4 className="font-semibold text-foreground">Additional Occupants</h4>
+                    <h4 className="font-semibold text-foreground mb-1">Residence </h4>
+                    <p className="text-sm text-muted-foreground">{residence.address}</p>
                   </div>
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Relationship</TableHead>
-                        <TableHead>Age</TableHead>
-                      </TableRow>
-                    </TableHeader>
                     <TableBody>
-                      {applicationData.householdInfo.occupants.map((occupant, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{occupant.name}</TableCell>
-                          <TableCell>{occupant.relationship}</TableCell>
-                          <TableCell>{occupant.age}</TableCell>
-                        </TableRow>
-                      ))}
+                      <TableRow>
+                        <TableCell className="font-medium w-1/3">Duration</TableCell>
+                        <TableCell>
+                          {residence.moveInDate}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Monthly Rent</TableCell>
+                        <TableCell>{residence.monthlyRent}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Landlord</TableCell>
+                        <TableCell>
+                          {residence.landlordName} - {residence.landlordPhone}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Reason for Leaving</TableCell>
+                        <TableCell>{residence.reasonForLeaving}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Vehicle Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Car className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Vehicle Information</CardTitle>
-                  <CardDescription>Registered vehicles</CardDescription>
-                </div>
+        {/* Employment & Income */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Briefcase className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Make & Model</TableHead>
-                    <TableHead>Year</TableHead>
-                    <TableHead>Color</TableHead>
-                    <TableHead>License Plate</TableHead>
-                    <TableHead>State</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {applicationData.vehicles.map((vehicle, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
-                        {vehicle.make} {vehicle.model}
-                      </TableCell>
-                      <TableCell>{vehicle.year}</TableCell>
-                      <TableCell>{vehicle.color}</TableCell>
-                      <TableCell className="font-mono">{vehicle.licensePlate}</TableCell>
-                      <TableCell>{vehicle.state}</TableCell>
+              <div>
+                <CardTitle>Employment & Income</CardTitle>
+                <CardDescription>Current employment and income details</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Employment Status</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.employmentInfo.employmentStatus}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Employer</TableCell>
+                  <TableCell>{applicationData.employmentInfo.employerName}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Job Title</TableCell>
+                  <TableCell>{applicationData.employmentInfo.jobTitle}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Employment Duration</TableCell>
+                  <TableCell>{applicationData.employmentInfo.employmentDuration}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Supervisor</TableCell>
+                  <TableCell>
+                    {applicationData.employmentInfo.supervisorName} - {applicationData.employmentInfo.supervisorPhone}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Monthly Income</TableCell>
+                  <TableCell className="text-lg font-semibold text-green-500">
+                    {applicationData.employmentInfo.monthlyIncome}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Financial Information */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Financial Information</CardTitle>
+                <CardDescription>Banking and credit details</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Bank Name</TableCell>
+                  <TableCell>{applicationData.financialInfo.bankName}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Account Type</TableCell>
+                  <TableCell>{applicationData.financialInfo.accountType}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Credit Score</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.financialInfo.creditScore}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Household Information */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Household Information</CardTitle>
+                <CardDescription>Occupants and pets</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Number of Occupants</TableCell>
+                  <TableCell>{applicationData.householdInfo.numberOfOccupants}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Pets</TableCell>
+                  <TableCell>{applicationData.householdInfo.pets}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Pet Deposit</TableCell>
+                  <TableCell>{applicationData.householdInfo.petDetails}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Pet Type</TableCell>
+                  <TableCell>{applicationData.householdInfo.petType}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Pet Weight</TableCell>
+                  <TableCell>{applicationData.householdInfo.petWeight}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+
+            {applicationData.householdInfo.occupants.length > 0 && (
+              <>
+                <Separator className="my-6" />
+                <div className="mb-3">
+                  <h4 className="font-semibold text-foreground">Additional Occupants</h4>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Relationship</TableHead>
+                      <TableHead>Age</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {applicationData.householdInfo.occupants.map((occupant, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{occupant.name}</TableCell>
+                        <TableCell>{occupant.relationship}</TableCell>
+                        <TableCell>{occupant.age}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Background Check */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Background Check</CardTitle>
-                  <CardDescription>Criminal and eviction history</CardDescription>
-                </div>
+        {/* Vehicle Information */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Car className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Criminal History</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.backgroundCheck.criminalHistory}
-                      </Badge>
+              <div>
+                <CardTitle>Vehicle Information</CardTitle>
+                <CardDescription>Registered vehicles</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Make & Model</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Color</TableHead>
+                  <TableHead>License Plate</TableHead>
+                  <TableHead>State</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {applicationData.vehicles.map((vehicle, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {vehicle.make} {vehicle.model}
                     </TableCell>
+                    <TableCell>{vehicle.year}</TableCell>
+                    <TableCell>{vehicle.color}</TableCell>
+                    <TableCell className="font-mono">{vehicle.licensePlate}</TableCell>
+                    <TableCell>{vehicle.state}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Eviction History</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.backgroundCheck.evictionHistory}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Consent to Background Check</TableCell>
-                    <TableCell>{applicationData.backgroundCheck.consentToBackgroundCheck}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-          {/* References */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Phone className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>References</CardTitle>
-                  <CardDescription>Personal and professional references</CardDescription>
-                </div>
+        {/* Background Check */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Relationship</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {applicationData.references.map((reference, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{reference.name}</TableCell>
-                      <TableCell>{reference.relationship}</TableCell>
-                      <TableCell>{reference.phone}</TableCell>
-                      <TableCell>{reference.email}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+              <div>
+                <CardTitle>Background Check</CardTitle>
+                <CardDescription>Criminal and eviction history</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">Eviction</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.backgroundCheck.evictionHistory}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
 
-          {/* Uploaded Documents */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Uploaded Documents</CardTitle>
-                  <CardDescription>Supporting documentation</CardDescription>
-                </div>
+                <TableRow>
+                  <TableCell className="font-medium">Eviction History</TableCell>
+                  <TableCell>
+                    {applicationData.backgroundCheck.evictionDetails}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell className="font-medium">Criminal</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.backgroundCheck.criminalHistory}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell className="font-medium">Criminal History</TableCell>
+                  <TableCell>
+                    {applicationData.backgroundCheck.criminalDetails}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell className="font-medium">Broken Lease ?</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.backgroundCheck.brokenLease}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell className="font-medium">Broken Lease History</TableCell>
+                  <TableCell>
+                    {applicationData.backgroundCheck.leaseExplain}
+
+                  </TableCell>
+                </TableRow>
+
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* References */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Phone className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">ID Document</TableCell>
-                    <TableCell>
+              <div>
+                <CardTitle>References</CardTitle>
+                <CardDescription>Personal and professional references</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Relationship</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {applicationData.references.map((reference, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{reference.name}</TableCell>
+                    <TableCell>{reference.relationship}</TableCell>
+                    <TableCell>{reference.phone}</TableCell>
+                    <TableCell>{reference.email}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Uploaded Documents */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Upload className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Uploaded Documents</CardTitle>
+                <CardDescription>Supporting documentation</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">ID Document</TableCell>
+                  <TableCell>
+                    <Link href={applicationData.uploads.idDocument || '/placeholder-image.png'}
+                    >
                       <Button variant="link" className="h-auto p-0 text-primary">
                         {applicationData.uploads.idDocument}
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Proof of Income</TableCell>
-                    <TableCell>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Proof of Income</TableCell>
+                  <TableCell>
+                    <Link href={applicationData.uploads.proofOfIncome || '/placeholder-image.png'}
+                    >
                       <Button variant="link" className="h-auto p-0 text-primary">
                         {applicationData.uploads.proofOfIncome}
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Bank Statements</TableCell>
-                    <TableCell>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Bank Statements</TableCell>
+                  <TableCell>
+                    <Link href={applicationData.uploads.bankStatements || '/placeholder-image.png'}
+                    >
                       <Button variant="link" className="h-auto p-0 text-primary">
                         {applicationData.uploads.bankStatements}
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">References</TableCell>
-                    <TableCell>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Proof of Giving Rent</TableCell>
+                  <TableCell>
+                    <Link href={applicationData.uploads.rentalImage || '/placeholder-image.png'}
+                    >
                       <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.references}
+                        {applicationData.uploads.rentalImage || "N/A"}
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Pet Record Statement</TableCell>
+                  <TableCell>
+                    <Link href={applicationData.uploads.petRecords || '/placeholder-image.png'}
+                    >
+                      <Button variant="link" className="h-auto p-0 text-primary">
+                        {applicationData.uploads.petRecords || "N/A"}
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-          {/* Authorization */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Authorization & Consent</CardTitle>
-                  <CardDescription>Applicant signature and agreements</CardDescription>
-                </div>
+        {/* Authorization */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Signature</TableCell>
-                    <TableCell className="font-serif text-xl">{applicationData.authorization.signature}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Date Signed</TableCell>
-                    <TableCell>{applicationData.authorization.date}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Consent to Credit Check</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.authorization.consentToCredit}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Consent to Contact References</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        {applicationData.authorization.consentToContact}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <CardTitle>Authorization & Consent</CardTitle>
+                <CardDescription>Applicant signature and agreements</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/3">Signature</TableCell>
+                  <TableCell className="font-serif text-xl">{applicationData.authorization.signature}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Date Signed</TableCell>
+                  <TableCell>{applicationData.authorization.date}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Consent to Credit Check</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.authorization.consentToCredit}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Consent to Contact References</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {applicationData.authorization.consentToContact}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
