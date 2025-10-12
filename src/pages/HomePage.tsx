@@ -49,7 +49,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Listings */}
-      <section className="py-16 bg-white">
+      {/* <section className="py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between">
             <div>
@@ -70,7 +70,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* How it works */}
       <section className="py-16">
