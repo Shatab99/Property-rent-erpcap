@@ -3,8 +3,9 @@ import React from 'react'
 
 export default function page() {
   return (
-    <div>
-      <Listings />
+    <div className='h-[90vh] my-6 '>
+      {/* <Listings /> */}
+      <iframe src="https://matrix-new.onekeymlsny.com/Matrix/public/IDX.aspx?idx=02882c54" width="100%" height="100%"></iframe>
     </div>
   )
 }
