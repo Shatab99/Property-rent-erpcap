@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import api, { baseURL } from "@/lib/baseurl"
+import api from "@/lib/baseurl"
 import { PropertyApplication } from "@/lib/applictionTypes"
 import Image from "next/image"
 import { toastError, toastSuccess } from "@/lib/toast"
@@ -38,7 +38,7 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
 
   const fetchApplication = async () => {
     try {
-      const res = await fetch(`${baseURL}/admin/property-application/${id}`, {
+      const res = await fetch(`/admin/property-application/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -204,7 +204,7 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
     if (!id) return
     setBtnLoading(true)
     try {
-      const res = await api.put(`${baseURL}/admin/update-application/${id}`, {
+      const res = await api.put(`/admin/update-application/${id}`, {
         status: "APPROVED"
       }, {
         headers: {
@@ -227,7 +227,7 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
     if (!id) return
     setBtnLoading(true)
     try {
-      const res = await api.put(`${baseURL}/admin/update-application/${id}`, {
+      const res = await api.put(`/admin/update-application/${id}`, {
         status: "REJECTED"
       }, {
         headers: {

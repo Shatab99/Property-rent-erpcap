@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/server-apis/secure-path/:path*',
+  //       destination: 'http://138.197.19.114:7008/api/v1/:path*',
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;

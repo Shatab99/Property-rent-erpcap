@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search } from "lucide-react"
-import { baseURL } from "@/lib/baseurl"
+import api from "@/lib/baseurl"
+
 
 interface Application {
   id: string
@@ -93,14 +94,12 @@ export default function PropertyApplicationsPage({
         ...(status !== "ALL" && { status }),
       })
 
-      const res = await fetch(`${baseURL}/admin/property-application?${query.toString()}`, {
+      const data = await api.get(`/admin/property-application?${query.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
       })
 
-      if (!res.ok) throw new Error("Failed to load applications")
-      const data = await res.json()
       setApplications(data.data.result)
       setMeta(data.data.meta)
 

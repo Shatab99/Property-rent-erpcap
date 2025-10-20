@@ -1,7 +1,7 @@
 import React, { Suspense } from "react"
 import PropertyApplicationsPage from "./_applicationPage"
-import { baseURL } from "@/lib/baseurl"
 import { cookies } from "next/headers"
+import api from "@/lib/baseurl"
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
     const cookieStore = await cookies()
@@ -21,14 +21,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
         ...(status !== "ALL" && { status }),
     })
 
-    const response = await fetch(`${baseURL}/admin/property-application?${query.toString()}`, {
+    const applications = await api.get(`/admin/property-application?${query.toString()}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        cache: "no-store",
     })
 
-    const applications = await response.json()
 
     return (
         <div>
