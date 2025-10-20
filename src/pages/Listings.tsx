@@ -227,7 +227,7 @@ function ListingsContent() {
                   <List size={16} /> List
                 </Button>
 
-                <Button
+                {/* <Button
                   variant={showMap ? "default" : "outline"}
                   className="gap-2 inline-flex"
                   onClick={() => {
@@ -236,7 +236,7 @@ function ListingsContent() {
                   }}
                 >
                   <Map size={16} /> Map
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
