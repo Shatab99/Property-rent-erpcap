@@ -65,6 +65,7 @@ interface ApiResponse {
 export default function PropertyDetails({ id }: { id: string }) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
+    const [imagesLoaded, setImagesLoaded] = useState<{ [key: number]: boolean }>({});
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -124,6 +125,10 @@ export default function PropertyDetails({ id }: { id: string }) {
         setImageError((prev) => ({ ...prev, [index]: true }));
     };
 
+    const handleImageLoad = (index: number) => {
+        setImagesLoaded((prev) => ({ ...prev, [index]: true }));
+    };
+
     // Get the next valid (non-failed) image index
     const getNextValidImageIndex = (currentIndex: number, direction: 'next' | 'prev'): number => {
         const validImages = property.images.map((_, i) => i).filter(i => !imageError[i]);
@@ -159,6 +164,13 @@ export default function PropertyDetails({ id }: { id: string }) {
     // Get valid images for thumbnail carousel
     const validImages = property.images.map((src, i) => ({ src, index: i }))
         .filter(({ index }) => !imageError[index]);
+
+    // Check if active/carousel images are loaded
+    const isCarouselImageLoaded = allImagesFailed || imagesLoaded[activeImageIndex];
+    const allValidImagesLoaded = validImages.length > 0 ? validImages.every(({ index }) => imagesLoaded[index]) : true;
+
+    // Check if we have any valid images at all
+    const hasValidImages = validImages.length > 0;
 
     const mapQuery = encodeURIComponent(`${property.address}, ${property.city}`);
     const fullAddress = `${property.address}, ${property.city}, ${property.stateOrProvince} ${property.postalCode}`;
@@ -203,54 +215,61 @@ export default function PropertyDetails({ id }: { id: string }) {
                             <div className="hidden lg:block">
                                 {/* Main Image Display */}
                                 <div className="relative w-full h-48 sm:h-64 md:h-96 lg:aspect-video overflow-hidden bg-gray-100">
-                                {allImagesFailed ? (
-                                    <img
-                                        src="/no_img.jpg"
-                                        alt="No image available"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : !imageError[activeImageIndex] ? (
-                                    <Image
-                                        src={property.images[activeImageIndex]}
-                                        alt={`${property.title} ${activeImageIndex + 1}`}
-                                        fill
-                                        className="object-cover"
-                                        onError={() => handleImageError(activeImageIndex)}
-                                        priority
-                                    />
-                                ) : (
-                                    // If current image failed but others exist, auto-switch to next valid
-                                    <Image
-                                        src={property.images[getNextValidImageIndex(activeImageIndex, 'next')]}
-                                        alt={`${property.title}`}
-                                        fill
-                                        className="object-cover"
-                                        onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
-                                        priority
-                                    />
-                                )}
+                                    {/* Loading Skeleton - only show if image is actually loading */}
+                                    {!allImagesFailed && !imagesLoaded[activeImageIndex] && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse z-5" />
+                                    )}
 
-                                {/* Navigation Arrows */}
-                                <button
-                                    onClick={handlePrevImage}
-                                    className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
-                                    aria-label="Previous image"
-                                >
-                                    <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
-                                </button>
-                                <button
-                                    onClick={handleNextImage}
-                                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
-                                    aria-label="Next image"
-                                >
-                                    <ChevronRight size={18} className="sm:w-5 sm:h-5" />
-                                </button>
+                                    {allImagesFailed ? (
+                                        <img
+                                            src="/no_img.jpg"
+                                            alt="No image available"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : !imageError[activeImageIndex] ? (
+                                        <Image
+                                            src={property.images[activeImageIndex]}
+                                            alt={`${property.title} ${activeImageIndex + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={() => handleImageError(activeImageIndex)}
+                                            onLoad={() => handleImageLoad(activeImageIndex)}
+                                            priority
+                                        />
+                                    ) : (
+                                        // If current image failed but others exist, auto-switch to next valid
+                                        <Image
+                                            src={property.images[getNextValidImageIndex(activeImageIndex, 'next')]}
+                                            alt={`${property.title}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                            onLoad={() => handleImageLoad(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                            priority
+                                        />
+                                    )}
 
-                                {/* Image Counter */}
-                                <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
-                                    {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
+                                    {/* Navigation Arrows */}
+                                    <button
+                                        onClick={handlePrevImage}
+                                        className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                        aria-label="Previous image"
+                                    >
+                                        <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleNextImage}
+                                        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                        aria-label="Next image"
+                                    >
+                                        <ChevronRight size={18} className="sm:w-5 sm:h-5" />
+                                    </button>
+
+                                    {/* Image Counter */}
+                                    <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
+                                        {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
+                                    </div>
                                 </div>
-                            </div>
 
                                 {/* Thumbnail Carousel */}
                                 <div className="p-2 sm:p-4 bg-gray-50 border-t overflow-x-auto">
@@ -269,12 +288,16 @@ export default function PropertyDetails({ id }: { id: string }) {
                                                         : "ring-gray-200 hover:ring-gray-300"
                                                         }`}
                                                 >
+                                                    {!imagesLoaded[index] && (
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse z-5" />
+                                                    )}
                                                     <Image
                                                         src={src}
                                                         alt={`Thumbnail ${index + 1}`}
                                                         fill
                                                         className="object-cover"
                                                         onError={() => handleImageError(index)}
+                                                        onLoad={() => handleImageLoad(index)}
                                                     />
                                                 </button>
                                             ))
@@ -287,6 +310,11 @@ export default function PropertyDetails({ id }: { id: string }) {
                             <div className="lg:hidden">
                                 {/* Mobile Full-Screen Carousel */}
                                 <div className="relative w-full h-64 overflow-hidden bg-gray-100">
+                                    {/* Loading Skeleton - only show if image is actually loading (not loaded yet) */}
+                                    {!allImagesFailed && !imagesLoaded[activeImageIndex] && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse z-5" />
+                                    )}
+
                                     {allImagesFailed ? (
                                         <img
                                             src="/no_img.jpg"
@@ -300,6 +328,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                             fill
                                             className="object-cover"
                                             onError={() => handleImageError(activeImageIndex)}
+                                            onLoad={() => handleImageLoad(activeImageIndex)}
                                             priority
                                         />
                                     ) : (
@@ -309,6 +338,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                             fill
                                             className="object-cover"
                                             onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                            onLoad={() => handleImageLoad(getNextValidImageIndex(activeImageIndex, 'next'))}
                                             priority
                                         />
                                     )}
