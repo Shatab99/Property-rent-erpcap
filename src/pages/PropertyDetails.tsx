@@ -167,41 +167,42 @@ export default function PropertyDetails({ id }: { id: string }) {
         <div className="bg-white">
             {/* Title + Meta */}
             <section className="border-b">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                        <div className="flex-1">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
                                 {property.title}
                             </h1>
-                            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                                 <span className="inline-flex items-center gap-1">
-                                    <MapPin size={16} /> {property.city}, {property.stateOrProvince}
+                                    <MapPin size={14} /> {property.city}, {property.stateOrProvince}
                                 </span>
                                 <span className={`inline-flex items-center gap-1 ${property.mlsStatus === "Active" ? "text-green-600" :
                                     property.mlsStatus === "Hold" ? "text-orange-400" : "text-red-600"}`}>
-                                    <ShieldCheck size={16} /> {property.mlsStatus}
+                                    <ShieldCheck size={14} /> {property.mlsStatus}
                                 </span>
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-extrabold">
+                            <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold">
                                 ${property.price.toLocaleString()}
                             </div>
-                            <div className="text-xs text-muted-foreground">per month</div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Content */}
-            <section className="py-8">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid gap-8 lg:grid-cols-3">
+            <section className="py-4 sm:py-6 md:py-8">
+                <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 grid gap-6 sm:gap-8 lg:grid-cols-3">
                     {/* Left - gallery and details */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 order-2 lg:order-1">
                         {/* Gallery with Carousel */}
-                        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-                            {/* Main Image Display */}
-                            <div className="relative aspect-video overflow-hidden bg-gray-100">
+                        <div className="overflow-hidden rounded-lg sm:rounded-xl border bg-white shadow-sm">
+                            {/* Desktop Carousel - Hidden on Mobile */}
+                            <div className="hidden lg:block">
+                                {/* Main Image Display */}
+                                <div className="relative w-full h-48 sm:h-64 md:h-96 lg:aspect-video overflow-hidden bg-gray-100">
                                 {allImagesFailed ? (
                                     <img
                                         src="/no_img.jpg"
@@ -232,50 +233,126 @@ export default function PropertyDetails({ id }: { id: string }) {
                                 {/* Navigation Arrows */}
                                 <button
                                     onClick={handlePrevImage}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                    className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
                                     aria-label="Previous image"
                                 >
-                                    <ChevronLeft size={20} />
+                                    <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
                                 </button>
                                 <button
                                     onClick={handleNextImage}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
                                     aria-label="Next image"
                                 >
-                                    <ChevronRight size={20} />
+                                    <ChevronRight size={18} className="sm:w-5 sm:h-5" />
                                 </button>
 
                                 {/* Image Counter */}
-                                <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
                                     {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
                                 </div>
                             </div>
 
-                            {/* Thumbnail Carousel */}
-                            <div className="p-4 bg-gray-50 border-t">
-                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                {/* Thumbnail Carousel */}
+                                <div className="p-2 sm:p-4 bg-gray-50 border-t overflow-x-auto">
+                                    <div className="flex gap-2 pb-2">
+                                        {allImagesFailed ? (
+                                            <div className="text-center text-xs sm:text-sm text-muted-foreground w-full py-2">
+                                                No images available
+                                            </div>
+                                        ) : (
+                                            validImages.map(({ src, index }) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => setActiveImageIndex(index)}
+                                                    className={`flex-shrink-0 relative aspect-[4/3] w-16 sm:w-20 md:w-24 overflow-hidden rounded-lg ring-2 transition-all ${activeImageIndex === index
+                                                        ? "ring-primary"
+                                                        : "ring-gray-200 hover:ring-gray-300"
+                                                        }`}
+                                                >
+                                                    <Image
+                                                        src={src}
+                                                        alt={`Thumbnail ${index + 1}`}
+                                                        fill
+                                                        className="object-cover"
+                                                        onError={() => handleImageError(index)}
+                                                    />
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mobile Carousel - Visible only on Mobile */}
+                            <div className="lg:hidden">
+                                {/* Mobile Full-Screen Carousel */}
+                                <div className="relative w-full h-64 overflow-hidden bg-gray-100">
                                     {allImagesFailed ? (
-                                        <div className="text-center text-sm text-muted-foreground w-full py-2">
-                                            No images available
-                                        </div>
+                                        <img
+                                            src="/no_img.jpg"
+                                            alt="No image available"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : !imageError[activeImageIndex] ? (
+                                        <Image
+                                            src={property.images[activeImageIndex]}
+                                            alt={`${property.title} ${activeImageIndex + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={() => handleImageError(activeImageIndex)}
+                                            priority
+                                        />
                                     ) : (
-                                        validImages.map(({ src, index }) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => setActiveImageIndex(index)}
-                                                className={`flex-shrink-0 relative aspect-[4/3] w-20 sm:w-24 overflow-hidden rounded-lg ring-2 transition-all ${activeImageIndex === index
-                                                    ? "ring-primary"
-                                                    : "ring-gray-200 hover:ring-gray-300"
+                                        <Image
+                                            src={property.images[getNextValidImageIndex(activeImageIndex, 'next')]}
+                                            alt={`${property.title}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                            priority
+                                        />
+                                    )}
+
+                                    {/* Mobile Navigation - Larger touch targets */}
+                                    <button
+                                        onClick={handlePrevImage}
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                        aria-label="Previous image"
+                                    >
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    <button
+                                        onClick={handleNextImage}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                                        aria-label="Next image"
+                                    >
+                                        <ChevronRight size={24} />
+                                    </button>
+
+                                    {/* Mobile Image Counter */}
+                                    <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                        {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
+                                    </div>
+                                </div>
+
+                                {/* Mobile Dot Indicators */}
+                                <div className="bg-gray-50 border-t p-3 flex justify-center gap-1.5">
+                                    {allImagesFailed ? (
+                                        <div className="text-xs text-muted-foreground">No images available</div>
+                                    ) : (
+                                        property.images.map((_, index) => (
+                                            !imageError[index] && (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => setActiveImageIndex(index)}
+                                                    className={`h-2 rounded-full transition-all ${
+                                                        activeImageIndex === index
+                                                            ? "w-6 bg-primary"
+                                                            : "w-2 bg-gray-300 hover:bg-gray-400"
                                                     }`}
-                                            >
-                                                <Image
-                                                    src={src}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    fill
-                                                    className="object-cover"
-                                                    onError={() => handleImageError(index)}
+                                                    aria-label={`Go to image ${index + 1}`}
                                                 />
-                                            </button>
+                                            )
                                         ))
                                     )}
                                 </div>
@@ -283,48 +360,50 @@ export default function PropertyDetails({ id }: { id: string }) {
                         </div>
 
                         {/* Specs */}
-                        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 rounded-xl border bg-white p-4 text-sm text-muted-foreground">
+                        <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 rounded-xl border bg-white p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                                <BedSingle className="text-foreground" size={18} />
+                                <BedSingle className="text-foreground flex-shrink-0" size={16} />
                                 <span className="text-foreground font-medium">
                                     {property.bedrooms}
                                 </span>{" "}
-                                Beds
+                                <span className="hidden sm:inline">Beds</span>
+                                <span className="sm:hidden">Bd</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Bath className="text-foreground" size={18} />
+                                <Bath className="text-foreground flex-shrink-0" size={16} />
                                 <span className="text-foreground font-medium">
                                     {property.bathrooms}
                                 </span>{" "}
-                                Baths
+                                <span className="hidden sm:inline">Baths</span>
+                                <span className="sm:hidden">Ba</span>
                             </div>
                             {property.lotSizeSquareFeet && (
                                 <div className="flex items-center gap-2">
-                                    <Ruler className="text-foreground" size={18} />
+                                    <Ruler className="text-foreground flex-shrink-0" size={16} />
                                     <span className="text-foreground font-medium">
-                                        {property.lotSizeSquareFeet.toLocaleString()}
+                                        {(property.lotSizeSquareFeet / 1000).toFixed(1)}k
                                     </span>{" "}
-                                    Sq Ft
+                                    <span className="hidden sm:inline">Sq Ft</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Description */}
-                        <div className="mt-6">
-                            <h2 className="text-xl font-semibold">Description</h2>
-                            <p className="mt-3 text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                        <div className="mt-4 sm:mt-6">
+                            <h2 className="text-lg sm:text-xl font-semibold">Description</h2>
+                            <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                 {property.description}
                             </p>
                         </div>
 
                         {/* Interior Features */}
                         {property.interiorFeatures.length > 0 && (
-                            <div className="mt-6">
-                                <h2 className="text-xl font-semibold">Interior Features</h2>
-                                <ul className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                            <div className="mt-4 sm:mt-6">
+                                <h2 className="text-lg sm:text-xl font-semibold">Interior Features</h2>
+                                <ul className="mt-2 sm:mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
                                     {property.interiorFeatures.map((feature) => (
                                         <li key={feature} className="flex items-center gap-2">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                            <span className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                                             {feature}
                                         </li>
                                     ))}
@@ -334,12 +413,12 @@ export default function PropertyDetails({ id }: { id: string }) {
 
                         {/* Exterior Features */}
                         {property.exteriorFeatures.length > 0 && (
-                            <div className="mt-6">
-                                <h2 className="text-xl font-semibold">Exterior Features</h2>
-                                <ul className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                            <div className="mt-4 sm:mt-6">
+                                <h2 className="text-lg sm:text-xl font-semibold">Exterior Features</h2>
+                                <ul className="mt-2 sm:mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
                                     {property.exteriorFeatures.map((feature) => (
                                         <li key={feature} className="flex items-center gap-2">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                            <span className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                                             {feature}
                                         </li>
                                     ))}
@@ -379,9 +458,9 @@ export default function PropertyDetails({ id }: { id: string }) {
 
                         {/* Map */}
                         <div className="mt-6">
-                            <h2 className="text-xl font-semibold">Location</h2>
-                            <p className="text-sm text-muted-foreground mt-1">{fullAddress}</p>
-                            <div className="mt-3 overflow-hidden rounded-xl border h-72">
+                            <h2 className="text-lg sm:text-xl font-semibold">Location</h2>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{fullAddress}</p>
+                            <div className="mt-3 overflow-hidden rounded-lg sm:rounded-xl border h-48 sm:h-64 md:h-72">
                                 <iframe
                                     title="map"
                                     src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
@@ -394,9 +473,9 @@ export default function PropertyDetails({ id }: { id: string }) {
                     </div>
 
                     {/* Right - contact + actions */}
-                    <aside className="lg:sticky lg:top-24 h-max">
-                        <div className="rounded-xl border bg-white p-4 sm:p-6 shadow-sm">
-                            <div className="text-sm text-muted-foreground">Monthly rent</div>
+                    <aside className="lg:sticky lg:top-24 h-max order-1 lg:order-2">
+                        <div className="rounded-lg sm:rounded-xl border bg-white p-3 sm:p-4 md:p-6 shadow-sm">
+                            <div className="text-sm text-muted-foreground">Price will be only</div>
                             <div className="mt-1 text-3xl font-extrabold">
                                 ${property.price.toLocaleString()}
                             </div>
