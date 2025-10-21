@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// const BACKEND_URL = "http://138.197.19.114:7008/api/v1";
-const BACKEND_URL = "http://localhost:7008/api/v1";
+const BACKEND_URL = "http://138.197.19.114:7008/api/v1";
+// const BACKEND_URL = "http://localhost:7008/api/v1";
 
 async function handleRequest(req: NextRequest, method: string, path: string[]) {
   const apiKey = req.headers.get("x-internal-key");
