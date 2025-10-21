@@ -335,7 +335,7 @@ function ListingsContent() {
                     Prev
                   </Button>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     {/* First page */}
                     <Button
                       variant={currentPage === 1 ? "default" : "outline"}
