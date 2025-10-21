@@ -356,10 +356,12 @@ function ListingsContent() {
                     {/* Pages around current page */}
                     {Array.from({ length: 5 }).map((_, i) => {
                       const pageNum = Math.max(2, currentPage - 2) + i;
-                      if (pageNum >= meta.totalPages || pageNum > currentPage + 2) {
+                      if (pageNum > meta.totalPages || pageNum === 1) {
                         return null;
                       }
-                      if (pageNum === 1) return null;
+                      if (pageNum <= currentPage - 2 && currentPage > 4) {
+                        return null;
+                      }
                       return (
                         <Button
                           key={pageNum}
@@ -386,10 +388,10 @@ function ListingsContent() {
                     {meta.totalPages > 1 && (
                       <>
                         {Array.from({
-                          length: Math.min(3, meta.totalPages - 1),
+                          length: Math.min(2, meta.totalPages - 1),
                         }).map((_, i) => {
-                          const pageNum = meta.totalPages - 2 + i;
-                          if (pageNum <= 1 || pageNum <= currentPage + 2) {
+                          const pageNum = meta.totalPages - 1 + i;
+                          if (pageNum <= 1 || pageNum <= currentPage + 2 || pageNum > meta.totalPages) {
                             return null;
                           }
                           return (
