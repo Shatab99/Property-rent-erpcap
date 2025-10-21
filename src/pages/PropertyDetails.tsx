@@ -534,7 +534,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                             </Link>
 
                             {/* Agent Info */}
-                            <div className="mt-6 pt-6 border-t">
+                            {/* <div className="mt-6 pt-6 border-t">
                                 <h3 className="font-semibold text-sm">Listing Agent</h3>
                                 <p className="text-sm text-muted-foreground mt-2">{property.listAgentName}</p>
                                 <p className="text-sm text-muted-foreground">{property.listOfficeName}</p>
@@ -554,7 +554,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                         {property.listAgentEmail}
                                     </a>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Contact Form */}
                             <form
@@ -575,7 +575,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     window.dispatchEvent(new Event("contacted-change"));
                                 }}
                             >
-                                <div className="text-sm font-semibold">Contact landlord</div>
+                                <div className="text-sm font-semibold">Contact Us</div>
                                 <div className="grid gap-3">
                                     <div className="relative">
                                         <Input name="name" placeholder="Full name" required />
