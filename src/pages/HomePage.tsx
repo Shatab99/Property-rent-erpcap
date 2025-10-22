@@ -1,9 +1,8 @@
 "use client"
-import PropertyCard from '@/components/site/PropertyCard'
+
 import SearchBar from '@/components/site/SearchBar'
 import Testimonials from '@/components/site/Testimonials'
 import { Button } from '@/components/ui/button'
-import { properties } from '@/data/properties'
 import { CheckCircle, Clock, Home, LineChart, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
@@ -47,30 +46,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Featured Listings */}
-      {/* <section className="py-16 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Featured rentals
-              </h2>
-              <p className="text-muted-foreground mt-2">
-                Hand-picked places you’ll love
-              </p>
-            </div>
-            <Button asChild variant="outline" className="hidden sm:inline-flex">
-              <a href="/listings">View all</a>
-            </Button>
-          </div>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {properties.slice(0, 6).map((p) => (
-              <PropertyCard key={p.id} property={p} />
-            ))}
-          </div>
-        </div>
-      </section> */}
 
       {/* How it works */}
       <section className="py-16">

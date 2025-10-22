@@ -14,8 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGrid, List, Map, Search, Loader2, MapPin, Home } from "lucide-react";
+import { LayoutGrid, List, Map, Search, Loader2, MapPin, Home, Check, Menu, X } from "lucide-react";
 import api from "@/lib/baseurl";
+import { get } from "http";
 
 type ViewMode = "grid" | "list";
 
@@ -68,11 +69,11 @@ function ListingsContent() {
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Initialize state from URL params or defaults
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState<string>(searchParams?.get("search") || "");
   const [query, setQuery] = useState(searchParams?.get("search") || "");
   const [sort, setSort] = useState(searchParams?.get("sort") || "recommended");
   const [sortField, setSortField] = useState(searchParams?.get("sortField") || "createdAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">((searchParams?.get("sortOrder") as "asc" | "desc") || "desc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">((searchParams?.get("sortOrder") as "asc" | "desc") || "asc");
   const [view, setView] = useState<ViewMode>((searchParams?.get("view") as ViewMode) || "grid");
   const [showMap, setShowMap] = useState(searchParams?.get("map") === "true");
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams?.get("page") || "1"));
@@ -87,6 +88,13 @@ function ListingsContent() {
   const [suggestions, setSuggestions] = useState<SearchSuggestion | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [hidePendingContingent, setHidePendingContingent] = useState(searchParams?.get("mlsStatus") === "Active");
+  const [propertyType, setPropertyType] = useState(searchParams?.get("propertyType") || "");
+  const [propertySubtype, setPropertySubtype] = useState(searchParams?.get("propertySubtype") || "");
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+
+  const propertyTypeOptions = ["Residential", "Residential Lease", "Residential Income", "Commercial Sale", "Land"];
+  const propertySubtypeOptions = ["Condominium", "Stock Cooperative", "Single Family Residence", "Duplex", "Apartment", "Multi Family", "Retail", "Business", "Warehouse", "Manufactured Home", "Mixed Use"];
 
   // Update URL when state changes
   const updateURL = (
@@ -96,7 +104,9 @@ function ListingsContent() {
     newSortOrder?: string,
     newView?: ViewMode,
     newMap?: boolean,
-    newPage?: number
+    newPage?: number,
+    newPropertyType?: string,
+    newPropertySubtype?: string
   ) => {
     const params = new URLSearchParams();
     if (newQuery || query) params.set("search", newQuery || query);
@@ -106,6 +116,9 @@ function ListingsContent() {
     if (newView || view) params.set("view", newView || view);
     if (newMap || showMap) params.set("map", (newMap ?? showMap).toString());
     if (newPage || currentPage) params.set("page", (newPage || currentPage).toString());
+    if (hidePendingContingent) params.set("mlsStatus", "Active");
+    if (newPropertyType || propertyType) params.set("propertyType", newPropertyType || propertyType);
+    if (newPropertySubtype || propertySubtype) params.set("propertySubtype", newPropertySubtype || propertySubtype);
 
     router.replace(`/listings?${params.toString()}`);
   };
@@ -161,9 +174,27 @@ function ListingsContent() {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await api.get<ApiResponse>(
-          `/properties/all-properties?limit=12&page=${currentPage}&search=${query}&sortBy=${sortField}&order=${sortOrder}`
-        );
+        const params = new URLSearchParams();
+        params.set("limit", "12");
+        params.set("page", currentPage.toString());
+        params.set("search", query);
+        params.set("sortBy", sortField);
+        params.set("order", sortOrder);
+
+        if (hidePendingContingent) {
+          params.set("mlsStatus", "Active");
+        }
+
+        if (propertyType) {
+          params.set("propertyType", propertyType);
+        }
+
+        if (propertySubtype) {
+          params.set("propertySubType", propertySubtype);
+        }
+
+        const apiUrl = `/properties/all-properties?${params.toString()}`;
+        const response = await api.get<ApiResponse>(apiUrl);
 
         if (response.data.success) {
           setProperties(response.data.data.data);
@@ -180,17 +211,23 @@ function ListingsContent() {
 
     const pollInterval = setInterval(() => {
       fetchProperties();
-    }, 10 * 60 * 1000); 
+    }, 10 * 60 * 1000);
 
     return () => clearInterval(pollInterval);
-  }, [query, currentPage, sortField, sortOrder]);
+  }, [query, currentPage, sortField, sortOrder, hidePendingContingent, propertyType, propertySubtype]);
 
   // Handle search button click
   const handleSearch = () => {
     setQuery(searchInput);
     setCurrentPage(1);
-    updateURL(searchInput, sort, sortField, sortOrder, view, showMap, 1);
+    updateURL(searchInput, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
   };
+
+  const handleHidePendingContingent = () => {
+    setHidePendingContingent((prev) => !prev);
+    setCurrentPage(1);
+    updateURL(query, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
+  }
 
   // Handle Enter key in search input
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -205,11 +242,11 @@ function ListingsContent() {
     setSearchInput(suggestion);
     setQuery(suggestion);
     setCurrentPage(1);
-    updateURL(suggestion, sort, sortField, sortOrder, view, showMap, 1);
+    updateURL(suggestion, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
     setShowSuggestions(false);
   };
 
-  const findPropertyByListingKey = (listingKey: string) => {  
+  const findPropertyByListingKey = (listingKey: string) => {
     router.push(`/property/${listingKey}`);
   };
 
@@ -239,7 +276,28 @@ function ListingsContent() {
 
     setSortField(newSortField);
     setSortOrder(newSortOrder);
-    updateURL(query, value, newSortField, newSortOrder, view, showMap, 1);
+    updateURL(query, value, newSortField, newSortOrder, view, showMap, 1, propertyType, propertySubtype);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = hidePendingContingent || propertyType || propertySubtype;
+
+  // Handle reset filters
+  const handleResetFilters = () => {
+    setHidePendingContingent(false);
+    setPropertyType("");
+    setPropertySubtype("");
+    setCurrentPage(1);
+
+    const params = new URLSearchParams();
+    params.set("search", query);
+    params.set("sort", sort);
+    params.set("sortField", sortField);
+    params.set("sortOrder", sortOrder);
+    params.set("view", view);
+    params.set("page", "1");
+
+    router.replace(`/listings?${params.toString()}`);
   };
 
   const mapQuery = query || (properties[0]?.city ?? "United States");
@@ -250,165 +308,417 @@ function ListingsContent() {
   return (
     <div className="bg-white">
       {/* Search Bar Section */}
-      <section className="border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row justify-between gap-4">
-            {/* Search Bar */}
-            <div className="flex gap-2 items-center flex-1 relative">
-              <div className="flex-1 flex gap-2 items-center relative">
-                <Search size={18} className="text-muted-foreground flex-shrink-0" />
-                <div className="flex-1 relative" ref={suggestionsRef}>
-                  <Input
-                    placeholder="Search properties by location, title..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyPress={handleSearchKeyPress}
-                    onFocus={() => searchInput && setShowSuggestions(true)}
-                    className="flex-1"
-                  />
-                  
-                  {/* Suggestions Dropdown */}
-                  {showSuggestions && searchInput && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-                      {suggestionsLoading ? (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          Loading suggestions...
-                        </div>
-                      ) : suggestions ? (
-                        <div>
-                          {/* Cities */}
-                          {suggestions.city && suggestions.city.length > 0 && (
-                            <div>
-                              <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
-                                <MapPin size={14} className="inline mr-2" />
-                                Cities
-                              </div>
-                              {suggestions.city.map((item, idx) => (
-                                <button
-                                  key={`city-${idx}`}
-                                  onClick={() => handleSuggestionClick(item.city)}
-                                  className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm"
-                                >
-                                  <div className="font-medium">{item.city}</div>
-                                  <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+      <section className="border-b bg-gradient-to-b from-gray-50 to-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          {/* Search Bar */}
+          <div className="flex gap-3 items-center w-full mb-6">
+            <div className="flex-1 flex gap-2 items-center relative">
+              <Search size={18} className="text-muted-foreground flex-shrink-0" />
+              <div className="flex-1 relative" ref={suggestionsRef}>
+                <Input
+                  placeholder="Search properties by location, title..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  onFocus={() => searchInput && setShowSuggestions(true)}
+                  className="flex-1 h-11 rounded-lg shadow-sm focus:shadow-md transition-shadow"
+                />
 
-                          {/* Counties */}
-                          {suggestions.county && suggestions.county.length > 0 && (
-                            <div>
-                              <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
-                                <MapPin size={14} className="inline mr-2" />
-                                Counties
-                              </div>
-                              {suggestions.county.map((item, idx) => (
-                                <button
-                                  key={`county-${idx}`}
-                                  onClick={() => handleSuggestionClick(item.county)}
-                                  className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm"
-                                >
-                                  <div className="font-medium">{item.county}</div>
-                                  <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
-                                </button>
-                              ))}
+                {/* Suggestions Dropdown */}
+                {showSuggestions && searchInput && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                    {suggestionsLoading ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        Loading suggestions...
+                      </div>
+                    ) : suggestions ? (
+                      <div>
+                        {/* Cities */}
+                        {suggestions.city && suggestions.city.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
+                              <MapPin size={14} className="inline mr-2" />
+                              Cities
                             </div>
-                          )}
+                            {suggestions.city.map((item, idx) => (
+                              <button
+                                key={`city-${idx}`}
+                                onClick={() => handleSuggestionClick(item.city)}
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
+                              >
+                                <div className="font-medium">{item.city}</div>
+                                <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
 
-                          {/* Properties */}
-                          {suggestions.suggestedProperties && suggestions.suggestedProperties.length > 0 && (
-                            <div>
-                              <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
-                                <Home size={14} className="inline mr-2" />
-                                Properties
-                              </div>
-                              {suggestions.suggestedProperties.map((item, idx) => (
-                                <button
-                                  key={`property-${idx}`}
-                                  onClick={() => findPropertyByListingKey(item.listingKey)}
-                                  className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm"
-                                >
-                                  <div className="font-medium">{item.title}</div>
-                                </button>
-                              ))}
+                        {/* Counties */}
+                        {suggestions.county && suggestions.county.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
+                              <MapPin size={14} className="inline mr-2" />
+                              Counties
                             </div>
-                          )}
+                            {suggestions.county.map((item, idx) => (
+                              <button
+                                key={`county-${idx}`}
+                                onClick={() => handleSuggestionClick(item.county)}
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
+                              >
+                                <div className="font-medium">{item.county}</div>
+                                <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
 
-                          {/* No suggestions */}
-                          {!suggestions.city?.length && !suggestions.county?.length && !suggestions.suggestedProperties?.length && (
-                            <div className="p-4 text-center text-sm text-muted-foreground">
-                              No suggestions found
+                        {/* Properties */}
+                        {suggestions.suggestedProperties && suggestions.suggestedProperties.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
+                              <Home size={14} className="inline mr-2" />
+                              Properties
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          No suggestions found
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                            {suggestions.suggestedProperties.map((item, idx) => (
+                              <button
+                                key={`property-${idx}`}
+                                onClick={() => findPropertyByListingKey(item.listingKey)}
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
+                              >
+                                <div className="font-medium">{item.title}</div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* No suggestions */}
+                        {!suggestions.city?.length && !suggestions.county?.length && !suggestions.suggestedProperties?.length && (
+                          <div className="p-4 text-center text-sm text-muted-foreground">
+                            No suggestions found
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        No suggestions found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <Button className="gap-2 inline-flex" onClick={handleSearch}>
-                <Search size={16} /> <div className="hidden md:block">Search</div>
+            </div>
+            <Button className="gap-2 h-11 px-6 rounded-lg shadow-sm hover:shadow-md transition-shadow" onClick={handleSearch}>
+              <Search size={18} /> <span className="hidden sm:inline">Search</span>
+            </Button>
+          </div>
+
+          {/* Filters Section */}
+          <div className="space-y-4">
+            {/* Mobile Filter Toggle Button */}
+            <div className="sm:hidden flex items-center gap-2">
+              <Button
+                onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                variant="outline"
+                className="gap-2 h-10 rounded-lg w-full"
+              >
+                <Menu size={18} />
+                <span>Filters & Sort</span>
               </Button>
             </div>
 
-            {/* Controls Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
-              <div className="flex flex-wrap items-center gap-2">
+            {/* Mobile Filter Menu with Animation */}
+            {isFilterMenuOpen && (
+              <div className="sm:hidden fixed inset-0 z-40 bg-black/50 animate-in fade-in duration-200"
+                onClick={() => setIsFilterMenuOpen(false)} />
+            )}
+
+            <div
+              className={`sm:hidden fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto ${isFilterMenuOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+            >
+              {/* Mobile Menu Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Filters & Sort</h2>
+                <button
+                  onClick={() => setIsFilterMenuOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X size={20} className="text-gray-600" />
+                </button>
+              </div>
+
+              {/* Mobile Filter Content */}
+              <div className="p-4 space-y-4">
+                {/* MLS Status */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">MLS Status</label>
+                  <Button
+                    onClick={() => {
+                      handleHidePendingContingent();
+                      setIsFilterMenuOpen(false);
+                    }}
+                    variant={hidePendingContingent ? "default" : "outline"}
+                    className="gap-2 w-full h-10 rounded-lg transition-all"
+                  >
+                    {hidePendingContingent && <Check size={16} />}
+                    <span>Hide Pending / Contingent</span>
+                  </Button>
+                </div>
+
+                {/* Property Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Property Type</label>
+                  <Select
+                    value={propertyType}
+                    onValueChange={(value) => {
+                      setPropertyType(value);
+                      setCurrentPage(1);
+                      updateURL(query, sort, sortField, sortOrder, view, showMap, 1, value, propertySubtype);
+                    }}
+                  >
+                    <SelectTrigger className="w-full h-10 rounded-lg border-gray-300">
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      {propertyTypeOptions.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Property Subtype */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Property Subtype</label>
+                  <Select
+                    value={propertySubtype}
+                    onValueChange={(value) => {
+                      setPropertySubtype(value);
+                      setCurrentPage(1);
+                      updateURL(query, sort, sortField, sortOrder, view, showMap, 1, propertyType, value);
+                    }}
+                  >
+                    <SelectTrigger className="w-full h-10 rounded-lg border-gray-300">
+                      <SelectValue placeholder="Select property subtype" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      {propertySubtypeOptions.map((subtype) => (
+                        <SelectItem key={subtype} value={subtype}>
+                          {subtype}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Reset Filters Button */}
+                {hasActiveFilters && (
+                  <Button
+                    onClick={() => {
+                      handleResetFilters();
+                      setIsFilterMenuOpen(false);
+                    }}
+                    variant="destructive"
+                    className="gap-2 w-full h-10 rounded-lg"
+                  >
+                    <span>✕</span> Clear Filters
+                  </Button>
+                )}
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 pt-4">
+                  <label className="text-sm font-medium text-gray-700">Sort & View</label>
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Sort by</label>
+                  <Select value={sort} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-full h-10 rounded-lg border-gray-300">
+                      <SelectValue placeholder="Select sort option" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="recommended">Recommended</SelectItem>
+                      <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                      <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* View Toggle */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">View</label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={view === "grid" ? "default" : "outline"}
+                      className="gap-2 flex-1 h-10 rounded-lg"
+                      onClick={() => {
+                        setView("grid");
+                        updateURL(query, sort, sortField, sortOrder, "grid", showMap, currentPage, propertyType, propertySubtype);
+                      }}
+                    >
+                      <LayoutGrid size={16} />
+                      Grid
+                    </Button>
+                    <Button
+                      variant={view === "list" ? "default" : "outline"}
+                      className="gap-2 flex-1 h-10 rounded-lg"
+                      onClick={() => {
+                        setView("list");
+                        updateURL(query, sort, sortField, sortOrder, "list", showMap, currentPage, propertyType, propertySubtype);
+                      }}
+                    >
+                      <List size={16} />
+                      List
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Close Button at Bottom */}
+                <Button
+                  onClick={() => setIsFilterMenuOpen(false)}
+                  className="w-full h-10 rounded-lg mt-6 bg-gray-900 hover:bg-gray-800"
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+
+            {/* Desktop/Tablet Primary Filters Row */}
+            <div className="hidden sm:flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center">
+              {/* Mls status */}
+              <div className="w-full sm:w-auto">
+                <Button
+                  onClick={handleHidePendingContingent}
+                  variant={hidePendingContingent ? "default" : "outline"}
+                  className="gap-2 w-full sm:w-auto h-10 rounded-lg transition-all"
+                >
+                  {hidePendingContingent && <Check size={16} />}
+                  <span>Hide Pending / Contingent</span>
+                </Button>
+              </div>
+
+              {/* Property Type Dropdown */}
+              <div className="w-full sm:w-auto">
+                <Select
+                  value={propertyType}
+                  onValueChange={(value) => {
+                    setPropertyType(value);
+                    setCurrentPage(1);
+                    updateURL(query, sort, sortField, sortOrder, view, showMap, 1, value, propertySubtype);
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-56 h-10 rounded-lg border-gray-300 shadow-sm hover:shadow-md transition-shadow">
+                    <SelectValue placeholder="Property Type" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg">
+                    {propertyTypeOptions.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Property Subtype Dropdown */}
+              <div className="w-full sm:w-auto">
+                <Select
+                  value={propertySubtype}
+                  onValueChange={(value) => {
+                    setPropertySubtype(value);
+                    setCurrentPage(1);
+                    updateURL(query, sort, sortField, sortOrder, view, showMap, 1, propertyType, value);
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-56 h-10 rounded-lg border-gray-300 shadow-sm hover:shadow-md transition-shadow">
+                    <SelectValue placeholder="Property Subtype" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg">
+                    {propertySubtypeOptions.map((subtype) => (
+                      <SelectItem key={subtype} value={subtype}>
+                        {subtype}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reset Filters Button */}
+              {hasActiveFilters && (
+                <div className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleResetFilters}
+                    variant="destructive"
+                    className="gap-2 w-full sm:w-auto h-10 rounded-lg shadow-sm hover:shadow-md transition-all"
+                  >
+                    <span>✕</span> Clear Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop/Tablet Secondary Controls Row */}
+            <div className="hidden sm:flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center pt-2 border-t border-gray-200">
+              {/* Sort Dropdown */}
+              <div className="w-full sm:w-auto">
                 <Select value={sort} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-44">
+                  <SelectTrigger className="w-full sm:w-48 h-10 rounded-lg border-gray-300 shadow-sm hover:shadow-md transition-shadow">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="recommended">Recommended</SelectItem>
                     <SelectItem value="price_asc">Price: Low to High</SelectItem>
                     <SelectItem value="price_desc">Price: High to Low</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
 
+              {/* View Toggle Buttons */}
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   variant={view === "grid" ? "default" : "outline"}
-                  className="gap-2"
+                  className="gap-2 flex-1 sm:flex-none h-10 rounded-lg transition-all"
                   onClick={() => {
                     setView("grid");
-                    updateURL(query, sort, sortField, sortOrder, "grid", showMap, currentPage);
+                    updateURL(query, sort, sortField, sortOrder, "grid", showMap, currentPage, propertyType, propertySubtype);
                   }}
+                  title="Grid View"
                 >
-                  <LayoutGrid size={16} /> Grid
+                  <LayoutGrid size={16} />
+                  <span className="hidden sm:inline">Grid</span>
                 </Button>
 
                 <Button
                   variant={view === "list" ? "default" : "outline"}
-                  className="gap-2"
+                  className="gap-2 flex-1 sm:flex-none h-10 rounded-lg transition-all"
                   onClick={() => {
                     setView("list");
-                    updateURL(query, sort, sortField, sortOrder, "list", showMap, currentPage);
+                    updateURL(query, sort, sortField, sortOrder, "list", showMap, currentPage, propertyType, propertySubtype);
                   }}
+                  title="List View"
                 >
-                  <List size={16} /> List
+                  <List size={16} />
+                  <span className="hidden sm:inline">List</span>
                 </Button>
+              </div>
 
-                {/* <Button
-                  variant={showMap ? "default" : "outline"}
-                  className="gap-2 inline-flex"
-                  onClick={() => {
-                    setShowMap((v) => !v);
-                    updateURL(query, sort, sortField, sortOrder, view, !showMap, currentPage);
-                  }}
-                >
-                  <Map size={16} /> Map
-                </Button> */}
+              {/* Results Counter - Responsive */}
+              <div className="text-sm text-muted-foreground ml-auto pt-2 sm:pt-0">
+                <span className="font-semibold text-gray-700">{meta.totalItems}</span> results
+                {query && ` for "${query}"`}
               </div>
             </div>
+
+            {/* Mobile Results Counter */}
+            <div className="sm:hidden text-sm text-muted-foreground text-center">
+              <span className="font-semibold text-gray-700">{meta.totalItems}</span> results
+              {query && ` for "${query}"`}
+            </div>
           </div>
-        </div>
-        <div className="text-sm text-muted-foreground text-center mb-2">
-          {meta.totalItems} properties found
-          {query && ` for "${query}"`}
         </div>
       </section>
 
@@ -494,7 +804,7 @@ function ListingsContent() {
                     onClick={() => {
                       const newPage = currentPage - 1;
                       setCurrentPage(newPage);
-                      updateURL(query, sort, sortField, sortOrder, view, showMap, newPage);
+                      updateURL(query, sort, sortField, sortOrder, view, showMap, newPage, propertyType, propertySubtype);
                     }}
                   >
                     Prev
@@ -506,7 +816,7 @@ function ListingsContent() {
                       variant={currentPage === 1 ? "default" : "outline"}
                       onClick={() => {
                         setCurrentPage(1);
-                        updateURL(query, sort, sortField, sortOrder, view, showMap, 1);
+                        updateURL(query, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
                       }}
                       className="w-10 h-10 p-0"
                     >
@@ -535,7 +845,7 @@ function ListingsContent() {
                           }
                           onClick={() => {
                             setCurrentPage(pageNum);
-                            updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum);
+                            updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum, propertyType, propertySubtype);
                           }}
                           className="w-10 h-10 p-0"
                         >
@@ -567,7 +877,7 @@ function ListingsContent() {
                               }
                               onClick={() => {
                                 setCurrentPage(pageNum);
-                                updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum);
+                                updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum, propertyType, propertySubtype);
                               }}
                               className="w-10 h-10 p-0"
                             >
@@ -584,7 +894,7 @@ function ListingsContent() {
                             }
                             onClick={() => {
                               setCurrentPage(meta.totalPages);
-                              updateURL(query, sort, sortField, sortOrder, view, showMap, meta.totalPages);
+                              updateURL(query, sort, sortField, sortOrder, view, showMap, meta.totalPages, propertyType, propertySubtype);
                             }}
                             className="w-10 h-10 p-0"
                           >
@@ -601,7 +911,7 @@ function ListingsContent() {
                     onClick={() => {
                       const newPage = currentPage + 1;
                       setCurrentPage(newPage);
-                      updateURL(query, sort, sortField, sortOrder, view, showMap, newPage);
+                      updateURL(query, sort, sortField, sortOrder, view, showMap, newPage, propertyType, propertySubtype);
                     }}
                   >
                     Next

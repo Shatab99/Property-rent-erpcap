@@ -21,6 +21,14 @@ interface SearchSuggestion {
   }[];
 }
 
+// const REAL_ESTATE_SUGGESTIONS = [
+//   "Luxury homes in Manhattan",
+//   "Affordable apartments in Brooklyn",
+//   "Commercial spaces for lease",
+//   "Beach properties in Miami",
+//   "Investment properties near downtown",
+// ];
+
 export default function SearchBar() {
   const router = useRouter();
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -28,6 +36,67 @@ export default function SearchBar() {
   const [suggestions, setSuggestions] = useState<SearchSuggestion | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
+  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  const [REAL_ESTATE_SUGGESTIONS, setREAL_ESTATE_SUGGESTIONS] = useState<string[]>([])
+
+  const fetchRealEstateSuggestions = async () => {
+    try {
+      const res = await api.get('/properties/search-typer')
+      setREAL_ESTATE_SUGGESTIONS(res.data?.data || res.data || [])
+    } catch (error) {
+      console.error("Error fetching typing suggestions:", error);
+      setREAL_ESTATE_SUGGESTIONS([]);
+    }
+  }
+
+  useEffect(() => {
+    fetchRealEstateSuggestions();
+  }, [])
+
+  // Typing animation effect
+  useEffect(() => {
+    // Guard: Don't start animation if suggestions array is empty
+    if (REAL_ESTATE_SUGGESTIONS.length === 0) {
+      setAnimatedPlaceholder("");
+      return;
+    }
+
+    const currentSuggestion = REAL_ESTATE_SUGGESTIONS[currentSuggestionIndex];
+    let charIndex = 0;
+
+    if (isTyping) {
+      const typingInterval = setInterval(() => {
+        if (charIndex < currentSuggestion.length) {
+          setAnimatedPlaceholder(currentSuggestion.slice(0, charIndex + 1));
+          charIndex++;
+        } else {
+          setIsTyping(false);
+        }
+      }, 50); // Typing speed
+
+      return () => clearInterval(typingInterval);
+    } else {
+      // Pause before deleting
+      const pauseTimer = setTimeout(() => {
+        const deleteInterval = setInterval(() => {
+          if (charIndex > 0) {
+            charIndex--;
+            setAnimatedPlaceholder(currentSuggestion.slice(0, charIndex));
+          } else {
+            clearInterval(deleteInterval);
+            setCurrentSuggestionIndex((prev) => (prev + 1) % REAL_ESTATE_SUGGESTIONS.length);
+            setIsTyping(true);
+          }
+        }, 30); // Deleting speed
+
+        return () => clearInterval(deleteInterval);
+      }, 2000); // Pause duration
+
+      return () => clearTimeout(pauseTimer);
+    }
+  }, [isTyping, currentSuggestionIndex, REAL_ESTATE_SUGGESTIONS]);
 
   // Fetch search suggestions
   useEffect(() => {
@@ -105,7 +174,7 @@ export default function SearchBar() {
         <MapPin className="text-muted-foreground flex-shrink-0" size={18} />
         <div className="flex-1 relative">
           <Input
-            placeholder="Search properties by location, title.."
+            placeholder={searchInput ? "" : animatedPlaceholder}
             className="border-0 focus-visible:ring-0 px-0"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
