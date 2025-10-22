@@ -83,6 +83,11 @@ export default function SearchBar() {
 
   const handleSuggestionClick = (suggestion: string) => {
     setSearchInput(suggestion);
+    router.push(`/listings?search=${suggestion}`);
+    setShowSuggestions(false);
+  };
+  const handlePropertyClick = (suggestion: string) => {
+    setSearchInput(suggestion);
     router.push(`/property/${suggestion}`);
     setShowSuggestions(false);
   };
@@ -168,7 +173,7 @@ export default function SearchBar() {
                       {suggestions.suggestedProperties.map((item, idx) => (
                         <button
                           key={`property-${idx}`}
-                          onClick={() => handleSuggestionClick(item.listingKey)}
+                          onClick={() => handlePropertyClick(item.listingKey)}
                           className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm"
                         >
                           <div className="font-medium">{item.title}</div>
