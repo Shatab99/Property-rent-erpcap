@@ -39,7 +39,6 @@ export default function Header() {
     };
   }, [pathname]);
 
-  console.log(email)
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -75,7 +74,10 @@ export default function Header() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  document.cookie = "token=; path=/; max-age=0";
+                  document.cookie = `token=; path=/`;
+                  document.cookie = `email=; path=/`;
+                  document.cookie = `name=; path=/`;
+                  document.cookie = `role=; path=/`;
                   window.dispatchEvent(new Event("auth-change"));
                   router.push("/login");
                 }}

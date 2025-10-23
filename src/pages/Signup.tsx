@@ -38,6 +38,8 @@ export default function Signup() {
                   const data = new FormData(form);
                   const password = String(data.get("password"));
                   const confirm = String(data.get("confirm"));
+                  if (password.length < 8) return toastError("Password must be at least 8 characters long", { position: "bottom-center" });
+                  
                   if (password !== confirm) {
                     toastError("Passwords do not match", { position: "bottom-center" });
                     return;
@@ -46,6 +48,8 @@ export default function Signup() {
                   const name = String(data.get("name"));
 
                   const res = await api.post("/users/create", { email, name, password })
+
+                  console.log(res)
 
                   if (!res.data.success) {
                     toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
@@ -59,6 +63,7 @@ export default function Signup() {
                 }
                 catch (error: any) {
                   toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
+                  console.log(error)
                 }
                 finally {
                   setLoading(false);
@@ -109,9 +114,9 @@ export default function Signup() {
             </p>
             <Separator className="my-3" />
             <p className="mt-4 text-sm text-muted-foreground">
-              Or sign up as a landlord{" "}
+              Or sign up as a Vendor{" "}
               <Link
-                href="/signup/landlord"
+                href="/vendor"
                 className="text-primary hover:underline"
               >
                 click here

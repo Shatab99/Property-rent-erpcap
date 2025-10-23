@@ -7,6 +7,7 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp"
 import api from "@/lib/baseurl"
+import { Loader } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -15,6 +16,7 @@ export function OTPPage({ email }: { email: string }) {
 
     const [otp, setOtp] = useState("")
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
 
     const [timer, setTimer] = useState(300);
 
@@ -25,6 +27,30 @@ export function OTPPage({ email }: { email: string }) {
         }, 1000);
         return () => clearInterval(interval);
     }, [timer]);
+
+    const handleVerify = async () => {
+        setIsLoading(true);
+        try {
+            const res = await api.post("/auth/verify-otp", { email, otp: Number(otp) })
+            if (!res.data.success) {
+                toast.error("OTP Verification Failed!", { position: "top-center", richColors: true })
+                return;
+            }
+
+            toast.success("OTP Verified Successfully!", { position: "top-center", richColors: true })
+            document.cookie = `token=${res.data.data.token}; path=/`;
+            document.cookie = `email=${email}; path=/`;
+            document.cookie = `name=${res.data.data.user.name}; path=/`;
+            document.cookie = `role=${res.data.data.user.role}; path=/`;
+
+            window.dispatchEvent(new Event("auth-change"));
+            router.push("/");
+        } catch (err) {
+            toast.error("Invalid otp", { position: "top-center", richColors: true })
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -64,16 +90,7 @@ export function OTPPage({ email }: { email: string }) {
                     setTimer(300);
                 }}>Resend OTP</button>
             </div>
-
-            <Button onClick={async () => {
-                const res = await api.post("/auth/verify-otp", { email, otp: Number(otp) })
-                if (!res.data.success) {
-                    toast.error("OTP Verification Failed!", { position: "top-center", richColors: true })
-                    return;
-                }
-                toast.success("OTP Verified Successfully!", { position: "top-center", richColors: true })
-                router.push("/login");
-            }} className='w-full max-w-xs' type='submit' disabled={timer === 0}>Verify OTP</Button>
+            <Button onClick={handleVerify} className='w-full max-w-xs' type='submit' disabled={timer === 0 || isLoading} > {isLoading ? <Loader className="animate-spin" /> : "Verify OTP"}</Button>
         </div>
     )
 }

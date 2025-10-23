@@ -11,28 +11,24 @@ import PropertyRow from "@/components/site/PropertyRow";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import api from "@/lib/baseurl";
 
 type Profile = {
   name: string;
   email: string;
   address?: string;
   phone?: string;
-  about?: string;
+  bio?: string;
   employment?: string;
-  householdSize?: number;
-  moveIn?: string; // ISO date
   creditScore?: number;
 };
 type Prefs = { targetCity?: string; maxBudget?: number; minBeds?: number; pets?: "none" | "cats" | "dogs" | "both" };
 type Collaborator = { email: string; status: "invited" | "accepted"; role: "buyer" | "cosigner" | "agent"; message?: string };
 
 export default function Dashboard() {
-  const [profile, setProfile] = useState<Profile>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("profile") || "{}");
-    } catch {
-      return {};
-    }
+  const [profile, setProfile] = useState<Profile>({
+    name: "",
+    email: "",
   });
 
   const router = useRouter();
@@ -66,38 +62,20 @@ export default function Dashboard() {
     }
   });
 
+
+
+  const fetchProfile = async () => {
+    const res = await api.get("/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    setProfile(res.data.data);
+  }
+
   useEffect(() => {
-    // Seed dummy data if absent
-    try {
-      const existingProfile = localStorage.getItem("profile");
-      if (!existingProfile) {
-        const seeded: Profile = {
-          name: "Jordan Lee",
-          email: localStorage.getItem("userEmail") || "jordan@example.com",
-          phone: "(415) 555-0142",
-          address: "245 Market St, San Francisco, CA",
-          about: "Product manager relocating for a new role. Quiet, tidy, and reliable tenant with excellent references.",
-          employment: "Full-time at Acme Inc. (4+ years)",
-          householdSize: 2,
-          moveIn: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10),
-          creditScore: 760,
-        };
-        localStorage.setItem("profile", JSON.stringify(seeded));
-        setProfile(seeded);
-      }
-      const existingPrefs = localStorage.getItem("preferences");
-      if (!existingPrefs) {
-        const seededPrefs: Prefs = { targetCity: "San Francisco, CA", maxBudget: 3800, minBeds: 1, pets: "cats" };
-        localStorage.setItem("preferences", JSON.stringify(seededPrefs));
-        setPrefs(seededPrefs);
-      }
-      const contactedRaw = localStorage.getItem("contacted");
-      if (!contactedRaw || contactedRaw === "[]") {
-        const seededContacted = ["p1", "p3"];
-        localStorage.setItem("contacted", JSON.stringify(seededContacted));
-        setContactedIds(seededContacted);
-      }
-    } catch { }
+    fetchProfile();
   }, []);
 
   useEffect(() => {
@@ -148,14 +126,12 @@ export default function Dashboard() {
                     <h2 className="text-lg font-semibold">Buyer profile</h2>
                     <div className="mt-4 grid gap-3 text-sm">
                       <div><span className="text-muted-foreground">Name:</span> <span className="font-medium">{profile.name || "—"}</span></div>
-                      <div><span className="text-muted-foreground">Email:</span> <span className="font-medium">{profile.email }</span></div>
+                      <div><span className="text-muted-foreground">Email:</span> <span className="font-medium">{profile.email}</span></div>
                       <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium">{profile.phone || "—"}</span></div>
                       <div><span className="text-muted-foreground">Address:</span> <span className="font-medium">{profile.address || "—"}</span></div>
                       <div><span className="text-muted-foreground">Employment:</span> <span className="font-medium">{profile.employment || "—"}</span></div>
-                      <div><span className="text-muted-foreground">Household size:</span> <span className="font-medium">{profile.householdSize ?? "—"}</span></div>
-                      <div><span className="text-muted-foreground">Move-in:</span> <span className="font-medium">{profile.moveIn || "—"}</span></div>
                       <div><span className="text-muted-foreground">Credit score:</span> <span className="font-medium">{profile.creditScore ?? "—"}</span></div>
-                      <div className="pt-2"><span className="text-muted-foreground">About:</span><p className="mt-1 text-foreground">{profile.about || "—"}</p></div>
+                      <div className="pt-2"><span className="text-muted-foreground">About:</span><p className="mt-1 text-foreground">{profile.bio || "—"}</p></div>
                     </div>
                   </div>
                   <div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -306,6 +282,26 @@ export default function Dashboard() {
                           }
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="employment">Employment</Label>
+                        <Input
+                          id="employment"
+                          value={profile.employment || ""}
+                          onChange={(e) =>
+                            setProfile({ ...profile, employment: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">About</Label>
+                        <Input
+                          id="bio"
+                          value={profile.bio || ""}
+                          onChange={(e) =>
+                            setProfile({ ...profile, bio: e.target.value })
+                          }
+                        />
+                      </div>
                       <div className="pt-2">
                         <Button type="submit">Save changes</Button>
                       </div>
@@ -328,7 +324,7 @@ export default function Dashboard() {
                           defaultValue={
                             profile.email
                           }
-                          required
+                          disabled
                         />
                       </div>
                       <div className="pt-2">
