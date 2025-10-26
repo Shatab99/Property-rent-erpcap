@@ -42,8 +42,8 @@ export default function Login() {
       form.reset();
       router.push(res.data.data.role === "ADMIN" ? "/admin" : next || "/");
     }
-    catch (error) {
-      toastError("Invalid credentials, please try again!");
+    catch (error: any) {
+      toastError(error?.response?.data?.message || error.message || "Something went wrong");
     }
     finally {
       setIsLoading(false);

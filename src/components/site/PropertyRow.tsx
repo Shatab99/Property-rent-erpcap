@@ -3,10 +3,72 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Property } from "@/components/site/PropertyCard";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/lib/baseurl";
+import { toastError, toastSuccess } from "@/lib/toast";
 
 export default function PropertyRow({ property }: { property: Property }) {
   const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
+
+  useEffect(() => {
+    // Check if property is in favorites
+    const checkFavorite = () => {
+      try {
+        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        setIsFavorite(favorites.includes(property.id));
+      } catch {
+        setIsFavorite(false);
+      }
+    };
+    checkFavorite();
+
+    // Listen for favorites changes
+    window.addEventListener("favorites-change", checkFavorite);
+    return () => window.removeEventListener("favorites-change", checkFavorite);
+  }, [property.id]);
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setLoading(true);
+    try {
+      if (token) {
+        // API call if authenticated
+        const res = await api.post(`/users/favorite/${property.id}`, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (res.data.success) {
+          setIsFavorite(!isFavorite);
+          toastSuccess(isFavorite ? "Removed from favorites" : "Added to favorites");
+          window.dispatchEvent(new Event("favorites-change"));
+        }
+      } else {
+        // Local storage if not authenticated
+        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        if (isFavorite) {
+          const updated = favorites.filter((id: string) => id !== property.id);
+          localStorage.setItem("favorites", JSON.stringify(updated));
+        } else {
+          favorites.push(property.id);
+          localStorage.setItem("favorites", JSON.stringify(favorites));
+        }
+        setIsFavorite(!isFavorite);
+        toastSuccess(!isFavorite ? "Added to favorites" : "Removed from favorites");
+        window.dispatchEvent(new Event("favorites-change"));
+      }
+    } catch (error: any) {
+      toastError(error?.response?.data?.message || "Failed to update favorite");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get valid images (those that haven't failed to load)
   const validImages = (property.images || []).filter((_, i) => !imageError[i]);
@@ -56,10 +118,12 @@ export default function PropertyRow({ property }: { property: Property }) {
           />
         )}
         <button
+          onClick={handleFavorite}
+          disabled={loading}
           aria-label="favorite"
-          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-foreground shadow hover:bg-white"
+          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-foreground shadow hover:bg-white transition-all"
         >
-          <Heart size={18} />
+          <Heart size={18} fill={isFavorite ? "currentColor" : "none"} color={isFavorite ? "red" : "currentColor"} />
         </button>
       </div>
       <div className="flex-1 p-4">

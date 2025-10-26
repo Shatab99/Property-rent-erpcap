@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Loader, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image";
+import { useFormData } from "@/hooks/useFormData";
 
 export default function SignupAsLandLord() {
     const router = useRouter();
@@ -153,199 +154,202 @@ export default function SignupAsLandLord() {
     );
 
     // Landlord Form
-    const LandlordForm = () => (
-        <form
-            className="space-y-3 sm:space-y-4 lg:space-y-5 transition-all duration-500"
-            onSubmit={async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                try {
-                    const form = e.currentTarget as HTMLFormElement;
-                    const data = new FormData(form);
+    const LandlordForm = () => {
+        const { processFormData } = useFormData({
+            fileFields: ["nidCardPhoto", "profileImage"],
+            requiredFiles: ["nidCardPhoto", "profileImage"],
+        });
 
-                    const name = String(data.get("name"));
-                    const email = String(data.get("email"));
-                    const password = String(data.get("password"));
-                    const phone = String(data.get("phone"));
-                    const nidImage = data.get("nidImage") as File;
-                    const profilePicture = data.get("profilePicture") as File;
+        return (
+            <form
+                className="space-y-3 sm:space-y-4 lg:space-y-5 transition-all duration-500"
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    setLoading(true);
+                    try {
+                        const formElement = e.currentTarget as HTMLFormElement;
+                        const result = processFormData(formElement);
 
-                    if (!nidImage || !profilePicture) {
-                        toastError("Please upload all required images", { position: "bottom-center" });
-                        return;
+                        if (!result) {
+                            setLoading(false);
+                            return;
+                        }
+
+                        const { form, bodyData } = result;
+
+                        // ✅ Submit via API
+                        const res = await api.post("/landlord/signup", form, {
+                            headers: { "Content-Type": "multipart/form-data" }
+                        });
+
+                        if (!res.data.success) {
+                            toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
+                            return;
+                        }
+
+                        window.dispatchEvent(new Event("auth-change"));
+                        toastSuccess("Your account has been created successfully! Please wait for the admin approval.", { position: "top-center" });
+                        formElement.reset();
+                        router.push(`/login`);
+                    } catch (error: any) {
+                        toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
+                    } finally {
+                        setLoading(false);
                     }
+                }}
+            >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
+                        <Input id="name" name="name" placeholder="John Doe" className="h-10 sm:h-11 text-sm" required />
+                    </div>
 
-                    const formData = new FormData();
-                    formData.append("name", name);
-                    formData.append("email", email);
-                    formData.append("password", password);
-                    formData.append("phone", phone);
-                    formData.append("nidImage", nidImage);
-                    formData.append("profilePicture", profilePicture);
-                    formData.append("userType", "landlord");
-
-                    const res = await api.post("/users/create-landlord", formData, {
-                        headers: { "Content-Type": "multipart/form-data" }
-                    });
-
-                    if (!res.data.success) {
-                        toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
-                        return;
-                    }
-
-                    window.dispatchEvent(new Event("auth-change"));
-                    toastSuccess("Email sent! Please check your inbox.", { position: "top-center" });
-                    form.reset();
-                    router.push(`/otp/${email}`);
-                } catch (error: any) {
-                    toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
-                } finally {
-                    setLoading(false);
-                }
-            }}
-        >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
-                    <Input id="name" name="name" placeholder="John Doe" className="h-10 sm:h-11 text-sm" required />
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
+                        <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" className="h-10 sm:h-11 text-sm" required />
+                    </div>
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
-                    <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" className="h-10 sm:h-11 text-sm" required />
-                </div>
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="you@example.com" className="h-10 sm:h-11 text-sm" required />
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Password</Label>
-                <Input id="password" name="password" type="password" className="h-10 sm:h-11 text-sm" required />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5 pt-1 sm:pt-2">
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="nidImage" className="text-xs sm:text-sm font-medium">National ID Card</Label>
-                    <Input id="nidImage" name="nidImage" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                    <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email</Label>
+                    <Input id="email" name="email" type="email" placeholder="you@example.com" className="h-10 sm:h-11 text-sm" required />
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="profilePicture" className="text-xs sm:text-sm font-medium">Profile Picture</Label>
-                    <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
-                    <p className="text-xs text-muted-foreground mt-1">Must match your NID photo</p>
+                    <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Password</Label>
+                    <Input id="password" name="password" type="password" className="h-10 sm:h-11 text-sm" required />
                 </div>
-            </div>
 
-            <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 h-10 sm:h-11 text-sm font-semibold mt-2" disabled={loading}>
-                {loading ? <Loader className="animate-spin mr-2 h-4 w-4" /> : null}
-                Complete Sign Up as Landlord
-            </Button>
-        </form>
-    );
+                {/* Image Upload Section */}
+                <div className="space-y-3 sm:space-y-4 pt-2 border-t border-gray-200">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-700">📸 Required Documents</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+                        <div className="space-y-1.5 sm:space-y-2">
+                            <Label htmlFor="nidCardPhoto" className="text-xs sm:text-sm font-medium">National ID Card</Label>
+                            <Input id="nidCardPhoto" name="nidCardPhoto" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                        </div>
+
+                        <div className="space-y-1.5 sm:space-y-2">
+                            <Label htmlFor="profileImage" className="text-xs sm:text-sm font-medium">Profile Picture</Label>
+                            <Input id="profileImage" name="profileImage" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                            <p className="text-xs text-muted-foreground mt-1">Must match your NID photo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 h-10 sm:h-11 text-sm font-semibold mt-4" disabled={loading}>
+                    {loading ? <Loader className="animate-spin mr-2 h-4 w-4" /> : '✅ Complete Sign Up as Landlord'}
+                </Button>
+            </form>
+        );
+    };
 
     // Agent Form
-    const AgentForm = () => (
-        <form
-            className="space-y-3 sm:space-y-4 lg:space-y-5 transition-all duration-500"
-            onSubmit={async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                try {
-                    const form = e.currentTarget as HTMLFormElement;
-                    const data = new FormData(form);
+    const AgentForm = () => {
+        const { processFormData } = useFormData({
+            fileFields: ["nidCardPhoto", "profileImage", "agentLicense"],
+            requiredFiles: ["nidCardPhoto", "profileImage", "agentLicense"],
+        });
 
-                    const name = String(data.get("name"));
-                    const email = String(data.get("email"));
-                    const password = String(data.get("password"));
-                    const phone = String(data.get("phone"));
-                    const nidImage = data.get("nidImage") as File;
-                    const profilePicture = data.get("profilePicture") as File;
-                    const agentLicense = data.get("agentLicense") as File;
+        return (
+            <form
+                className="space-y-3 sm:space-y-4 lg:space-y-5 transition-all duration-500"
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    setLoading(true);
+                    try {
+                        const formElement = e.currentTarget as HTMLFormElement;
+                        const result = processFormData(formElement);
 
-                    if (!nidImage || !profilePicture || !agentLicense) {
-                        toastError("Please upload all required images", { position: "bottom-center" });
-                        return;
+                        if (!result) {
+                            setLoading(false);
+                            return;
+                        }
+
+                        const { form, bodyData } = result;
+
+                        // ✅ Submit via API
+                        const res = await api.post("/agent/signup", form, {
+                            headers: { "Content-Type": "multipart/form-data" }
+                        });
+
+                        console.log(res)
+
+                        if (!res.data.success) {
+                            toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
+                            return;
+                        }
+
+                        window.dispatchEvent(new Event("auth-change"));
+                        toastSuccess("Successfully signed up as an agent! Please wait for admin approval.", { position: "top-center" });
+                        router.push(`/login`);
+                    } catch (error: any) {
+                        toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
+                        console.log(error)
+                    } finally {
+                        setLoading(false);
                     }
+                }}
+            >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
+                        <Input id="name" name="name" placeholder="Jane Smith" className="h-10 sm:h-11 text-sm" required />
+                    </div>
 
-                    const formData = new FormData();
-                    formData.append("name", name);
-                    formData.append("email", email);
-                    formData.append("password", password);
-                    formData.append("phone", phone);
-                    formData.append("nidImage", nidImage);
-                    formData.append("profilePicture", profilePicture);
-                    formData.append("agentLicense", agentLicense);
-                    formData.append("userType", "agent");
-
-                    const res = await api.post("/users/create-agent", formData, {
-                        headers: { "Content-Type": "multipart/form-data" }
-                    });
-
-                    if (!res.data.success) {
-                        toastError(res.data.message || "Something went wrong", { position: "bottom-center" });
-                        return;
-                    }
-
-                    window.dispatchEvent(new Event("auth-change"));
-                    toastSuccess("Email sent! Please check your inbox.", { position: "top-center" });
-                    form.reset();
-                    router.push(`/otp/${email}`);
-                } catch (error: any) {
-                    toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });
-                } finally {
-                    setLoading(false);
-                }
-            }}
-        >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
-                    <Input id="name" name="name" placeholder="Jane Smith" className="h-10 sm:h-11 text-sm" required />
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
+                        <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" className="h-10 sm:h-11 text-sm" required />
+                    </div>
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
-                    <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" className="h-10 sm:h-11 text-sm" required />
-                </div>
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="you@example.com" className="h-10 sm:h-11 text-sm" required />
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Password</Label>
-                <Input id="password" name="password" type="password" className="h-10 sm:h-11 text-sm" required />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5 pt-1 sm:pt-2">
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="nidImage" className="text-xs sm:text-sm font-medium">National ID Card</Label>
-                    <Input id="nidImage" name="nidImage" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                    <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email</Label>
+                    <Input id="email" name="email" type="email" placeholder="you@example.com" className="h-10 sm:h-11 text-sm" required />
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="profilePicture" className="text-xs sm:text-sm font-medium">Profile Picture</Label>
-                    <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
-                    <p className="text-xs text-muted-foreground mt-1">Must match your NID photo</p>
+                    <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Password</Label>
+                    <Input id="password" name="password" type="password" className="h-10 sm:h-11 text-sm" required />
                 </div>
-            </div>
 
-            <div className="space-y-1.5 sm:space-y-2 pt-1 sm:pt-2">
-                <Label htmlFor="agentLicense" className="text-xs sm:text-sm font-medium">Agent License Photo</Label>
-                <Input id="agentLicense" name="agentLicense" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
-            </div>
+                {/* Image Upload Section */}
+                <div className="space-y-3 sm:space-y-4 pt-2 border-t border-gray-200">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-700">📸 Required Documents</p>
 
-            <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600 h-10 sm:h-11 text-sm font-semibold mt-2" disabled={loading}>
-                {loading ? <Loader className="animate-spin mr-2 h-4 w-4" /> : null}
-                Complete Sign Up as Agent
-            </Button>
-        </form>
-    );
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+                        <div className="space-y-1.5 sm:space-y-2">
+                            <Label htmlFor="nidCardPhoto" className="text-xs sm:text-sm font-medium">National ID Card</Label>
+                            <Input id="nidCardPhoto" name="nidCardPhoto" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                        </div>
+
+                        <div className="space-y-1.5 sm:space-y-2">
+                            <Label htmlFor="profileImage" className="text-xs sm:text-sm font-medium">Profile Picture</Label>
+                            <Input
+                                id="profileImage"
+                                name="profileImage"
+                                type="file"
+                                accept="image/*"
+                                className="h-10 sm:h-11 cursor-pointer text-sm"
+                                required />
+                            <p className="text-xs text-muted-foreground mt-1">Must match your NID photo</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="agentLicense" className="text-xs sm:text-sm font-medium">Agent License Photo</Label>
+                        <Input id="agentLicense" name="agentLicense" type="file" accept="image/*" className="h-10 sm:h-11 cursor-pointer text-sm" required />
+                        <p className="text-xs text-muted-foreground mt-1">Clear photo of your agent license</p>
+                    </div>
+                </div>
+
+                <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600 h-10 sm:h-11 text-sm font-semibold mt-4" disabled={loading}>
+                    {loading ? <Loader className="animate-spin mr-2 h-4 w-4" /> : '✅ Complete Sign Up as Agent'}
+                </Button>
+            </form>
+        );
+    };
 
     // Step 3: Form Selection
     const FormStep = () => (

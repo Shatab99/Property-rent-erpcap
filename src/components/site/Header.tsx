@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "../../../public/logo.png";
+import { Menu, X } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Search" },
@@ -19,6 +20,7 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter()
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function Header() {
           <Image height={100} width={100} src={logo} alt="Logo" />
         </Link>
 
-        {/* Navigation */}
+        {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
             <Link
@@ -64,8 +66,8 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Auth buttons */}
-        <div className="flex items-center gap-2">
+        {/* Auth buttons - Desktop */}
+        <div className="hidden md:flex items-center gap-2">
           {email ? (
             <>
               <Button asChild variant="ghost" className="hidden sm:inline-flex">
@@ -96,7 +98,89 @@ export default function Header() {
             </>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden flex items-center gap-2">
+          {email ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  document.cookie = `token=; path=/`;
+                  document.cookie = `email=; path=/`;
+                  document.cookie = `name=; path=/`;
+                  document.cookie = `role=; path=/`;
+                  window.dispatchEvent(new Event("auth-change"));
+                  router.push("/login");
+                }}
+                className="text-xs"
+              >
+                Log out
+              </Button>
+            </>
+          ) : null}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {mobileMenuOpen ? (
+              <X size={24} className="text-foreground" />
+            ) : (
+              <Menu size={24} className="text-foreground" />
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu - Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t bg-white">
+          <nav className="flex flex-col gap-0">
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                href={item.to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "px-4 py-3 text-sm font-medium border-b hover:bg-gray-50 transition-colors",
+                  pathname === item.to
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Mobile Auth Section */}
+          <div className="border-t p-4 flex flex-col gap-2">
+            {email ? (
+              <>
+                <Button asChild variant="ghost" className="w-full justify-start">
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    Dashboard
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="w-full justify-start">
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Log in
+                  </Link>
+                </Button>
+                <Button asChild className="w-full bg-primary hover:bg-primary/90">
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    Sign up
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

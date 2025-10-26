@@ -26,7 +26,7 @@ export default function Signup() {
               Create your account
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Join Rentora to find, tour, and apply faster.
+              Join Sk Real Estate to find, tour, and apply faster.
             </p>
             <form
               className="mt-6 space-y-4"

@@ -100,17 +100,6 @@ export default function RentalApplicationWizard() {
       // ✅ Append JSON string for non-file data
       form.append("bodyData", JSON.stringify(bodyData));
 
-      // // Debug log (you should see files + bodyData)
-      // console.log("🧾 Final FormData:");
-      // for (let pair of form.entries()) {
-      //     const [key, value] = pair;
-      //     if (value instanceof File) {
-      //       console.log(key, value.name, value.type, value.size);
-      //     } else {
-      //       console.log(key, value);
-      //     }
-      // }
-
       // ✅ Submit via axios
       const response = await api.put("/booking/apply-for-rent", form, {
         headers: {
