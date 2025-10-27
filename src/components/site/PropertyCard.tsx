@@ -70,6 +70,9 @@ export default function PropertyCard({ property }: { property: Property }) {
         });
 
         if (res.data.success) {
+          // Refetch user favorites to update the heart icon
+          await fetchUserFavorites();
+          toastSuccess("Favorite updated");
           window.dispatchEvent(new Event("favorites-change"));
         }
       } else {

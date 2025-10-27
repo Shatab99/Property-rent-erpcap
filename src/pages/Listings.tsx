@@ -14,11 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGrid, List, Map, Search, Loader2, MapPin, Home, Check, Menu, X } from "lucide-react";
+import { LayoutGrid, Search, Loader2, MapPin, Home, Check, Menu, X } from "lucide-react";
 import api from "@/lib/baseurl";
 import { get } from "http";
 
-type ViewMode = "grid" | "list";
+type ViewMode = "grid";
 
 interface PropertyImage {
   id: string;
@@ -551,30 +551,7 @@ function ListingsContent() {
                 {/* View Toggle */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">View</label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={view === "grid" ? "default" : "outline"}
-                      className="gap-2 flex-1 h-10 rounded-lg"
-                      onClick={() => {
-                        setView("grid");
-                        updateURL(query, sort, sortField, sortOrder, "grid", showMap, currentPage, propertyType, propertySubtype);
-                      }}
-                    >
-                      <LayoutGrid size={16} />
-                      Grid
-                    </Button>
-                    <Button
-                      variant={view === "list" ? "default" : "outline"}
-                      className="gap-2 flex-1 h-10 rounded-lg"
-                      onClick={() => {
-                        setView("list");
-                        updateURL(query, sort, sortField, sortOrder, "list", showMap, currentPage, propertyType, propertySubtype);
-                      }}
-                    >
-                      <List size={16} />
-                      List
-                    </Button>
-                  </div>
+                  <p className="text-sm text-muted-foreground">Grid View</p>
                 </div>
 
                 {/* Close Button at Bottom */}
@@ -676,36 +653,6 @@ function ListingsContent() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* View Toggle Buttons */}
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button
-                  variant={view === "grid" ? "default" : "outline"}
-                  className="gap-2 flex-1 sm:flex-none h-10 rounded-lg transition-all"
-                  onClick={() => {
-                    setView("grid");
-                    updateURL(query, sort, sortField, sortOrder, "grid", showMap, currentPage, propertyType, propertySubtype);
-                  }}
-                  title="Grid View"
-                >
-                  <LayoutGrid size={16} />
-                  <span className="hidden sm:inline">Grid</span>
-                </Button>
-
-                <Button
-                  variant={view === "list" ? "default" : "outline"}
-                  className="gap-2 flex-1 sm:flex-none h-10 rounded-lg transition-all"
-                  onClick={() => {
-                    setView("list");
-                    updateURL(query, sort, sortField, sortOrder, "list", showMap, currentPage, propertyType, propertySubtype);
-                  }}
-                  title="List View"
-                >
-                  <List size={16} />
-                  <span className="hidden sm:inline">List</span>
-                </Button>
-              </div>
-
               {/* Results Counter - Responsive */}
               <div className="text-sm text-muted-foreground ml-auto pt-2 sm:pt-0">
                 <span className="font-semibold text-gray-700">{meta.totalItems}</span> results
@@ -725,22 +672,10 @@ function ListingsContent() {
       {/* Content layout */}
       <section>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          {/* Results + optional map */}
-          <div
-            className={
-              showMap
-                ? "grid md:grid-cols-12 gap-6"
-                : ""
-            }
-          >
-            <div className={showMap ? "md:col-span-7" : ""}>
-              <div
-                className={
-                  view === "grid"
-                    ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                    : "grid gap-4"
-                }
-              >
+          {/* Grid View Only */}
+          <div>
+            <div className="">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {loading ? (
                   <div className="col-span-full flex items-center justify-center py-16">
                     <Loader2 className="animate-spin text-primary" size={32} />
@@ -755,43 +690,24 @@ function ListingsContent() {
                     </div>
                   </div>
                 ) : (
-                  sorted.map((p) =>
-                    view === "grid" ? (
-                      <PropertyCard
-                        key={p.id}
-                        property={{
-                          id: p.id,
-                          title: p.title,
-                          price: p.originalPrice,
-                          beds: p.bedrooms ?? 0,
-                          baths: p.bathrooms ?? 0,
-                          sqft: p.area ?? 0,
-                          image: p.images[0] ?? "",
-                          location: p.city,
-                          images: p.images,
-                          mlsStatus: p.mlsStatus,
-                          listingKey: p.listingKey
-                        }}
-                      />
-                    ) : (
-                      <PropertyRow
-                        key={p.id}
-                        property={{
-                          id: p.id,
-                          title: p.title,
-                          price: p.originalPrice,
-                          beds: p.bedrooms ?? 0,
-                          baths: p.bathrooms ?? 0,
-                          sqft: p.area ?? 0,
-                          image: p.images[0] ?? "",
-                          location: p.city,
-                          images: p.images,
-                          mlsStatus: p.mlsStatus,
-                          listingKey: p.listingKey
-                        }}
-                      />
-                    )
-                  )
+                  sorted.map((p) => (
+                    <PropertyCard
+                      key={p.id}
+                      property={{
+                        id: p.id,
+                        title: p.title,
+                        price: p.originalPrice,
+                        beds: p.bedrooms ?? 0,
+                        baths: p.bathrooms ?? 0,
+                        sqft: p.area ?? 0,
+                        image: p.images[0] ?? "",
+                        location: p.city,
+                        images: p.images,
+                        mlsStatus: p.mlsStatus,
+                        listingKey: p.listingKey
+                      }}
+                    />
+                  ))
                 )}
               </div>
 
@@ -919,19 +835,6 @@ function ListingsContent() {
                 </div>
               )}
             </div>
-            {showMap && (
-              <div className="md:col-span-5">
-                <div className="sticky top-24 h-[70vh] overflow-hidden rounded-xl border">
-                  <iframe
-                    title="map"
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
-                    loading="lazy"
-                    className="h-full w-full border-0"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>
