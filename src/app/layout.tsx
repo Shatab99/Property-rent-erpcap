@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -23,13 +22,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://skrealestate.com",
+    url: "https://skregp.com",
     title: "Sk Real Estate - Find Your Perfect Home",
     description: "Discover and rent high-quality properties",
     siteName: "Sk Real Estate",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.jpeg",
   },
 };
 
