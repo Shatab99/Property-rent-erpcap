@@ -63,7 +63,11 @@ export default function PropertyCard({ property }: { property: Property }) {
     try {
       if (token) {
         // API call if authenticated
-        const res = await api.post(`/users/favorite/${property.id}`, {}, {
+        const res = favorites.includes(property.id) ? await api.delete(`/users/favorite/${property.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }) : await api.post(`/users/favorite/${property.id}`, {}, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -72,7 +76,7 @@ export default function PropertyCard({ property }: { property: Property }) {
         if (res.data.success) {
           // Refetch user favorites to update the heart icon
           await fetchUserFavorites();
-          toastSuccess("Favorite updated");
+          toastSuccess(`${favorites.includes(property.id) ? "Removed from" : "Added to"} favorites`);
           window.dispatchEvent(new Event("favorites-change"));
         }
       } else {
