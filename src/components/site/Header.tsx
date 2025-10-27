@@ -76,10 +76,10 @@ export default function Header() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  document.cookie = `token=; path=/`;
-                  document.cookie = `email=; path=/`;
-                  document.cookie = `name=; path=/`;
-                  document.cookie = `role=; path=/`;
+                  document.cookie = `token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
                   window.dispatchEvent(new Event("auth-change"));
                   router.push("/login");
                 }}
@@ -107,10 +107,10 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  document.cookie = `token=; path=/`;
-                  document.cookie = `email=; path=/`;
-                  document.cookie = `name=; path=/`;
-                  document.cookie = `role=; path=/`;
+                  document.cookie = `token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+                  document.cookie = `role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
                   window.dispatchEvent(new Event("auth-change"));
                   router.push("/login");
                 }}
