@@ -211,7 +211,7 @@ function ListingsContent() {
 
     const pollInterval = setInterval(() => {
       fetchProperties();
-    }, 10 * 60 * 1000);
+    }, 10 * 60 * 60 * 1000);
 
     return () => clearInterval(pollInterval);
   }, [query, currentPage, sortField, sortOrder, hidePendingContingent, propertyType, propertySubtype]);
@@ -704,7 +704,7 @@ function ListingsContent() {
                         location: p.city,
                         images: p.images,
                         mlsStatus: p.mlsStatus,
-                        listingKey: p.listingKey
+                        listingKey: p.listingKey,
                       }}
                     />
                   ))
@@ -727,70 +727,38 @@ function ListingsContent() {
                   </Button>
 
                   <div className="flex flex-wrap items-center gap-1">
-                    {/* First page */}
-                    <Button
-                      variant={currentPage === 1 ? "default" : "outline"}
-                      onClick={() => {
-                        setCurrentPage(1);
-                        updateURL(query, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
-                      }}
-                      className="w-10 h-10 p-0"
-                    >
-                      1
-                    </Button>
+                    {/* Generate page numbers to display */}
+                    {(() => {
+                      const pages = new Set<number>();
+                      const range = 2; // Show 2 pages on each side of current page
 
-                    {/* Dots if there's gap */}
-                    {currentPage > 4 && (
-                      <span className="px-2 text-muted-foreground">...</span>
-                    )}
+                      // Always include first page
+                      pages.add(1);
 
-                    {/* Pages around current page */}
-                    {Array.from({ length: 5 }).map((_, i) => {
-                      const pageNum = Math.max(2, currentPage - 2) + i;
-                      if (pageNum > meta.totalPages || pageNum === 1) {
-                        return null;
+                      // Always include last page
+                      if (meta.totalPages > 1) {
+                        pages.add(meta.totalPages);
                       }
-                      if (pageNum <= currentPage - 2 && currentPage > 4) {
-                        return null;
+
+                      // Include current page and surrounding pages
+                      const start = Math.max(1, currentPage - range);
+                      const end = Math.min(meta.totalPages, currentPage + range);
+
+                      for (let i = start; i <= end; i++) {
+                        pages.add(i);
                       }
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={
-                            pageNum === currentPage ? "default" : "outline"
-                          }
-                          onClick={() => {
-                            setCurrentPage(pageNum);
-                            updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum, propertyType, propertySubtype);
-                          }}
-                          className="w-10 h-10 p-0"
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
 
-                    {/* Dots if there's gap */}
-                    {currentPage < meta.totalPages - 3 && (
-                      <span className="px-2 text-muted-foreground">...</span>
-                    )}
+                      // Convert to sorted array
+                      const pageArray = Array.from(pages).sort((a, b) => a - b);
 
-                    {/* Last pages */}
-                    {meta.totalPages > 1 && (
-                      <>
-                        {Array.from({
-                          length: Math.min(2, meta.totalPages - 1),
-                        }).map((_, i) => {
-                          const pageNum = meta.totalPages - 1 + i;
-                          if (pageNum <= 1 || pageNum <= currentPage + 2 || pageNum > meta.totalPages) {
-                            return null;
-                          }
-                          return (
+                      return pageArray.map((pageNum, idx) => {
+                        const nextPage = pageArray[idx + 1];
+                        const showDots = nextPage && nextPage - pageNum > 1;
+
+                        return (
+                          <div key={pageNum} className="flex items-center gap-1">
                             <Button
-                              key={pageNum}
-                              variant={
-                                pageNum === currentPage ? "default" : "outline"
-                              }
+                              variant={pageNum === currentPage ? "default" : "outline"}
                               onClick={() => {
                                 setCurrentPage(pageNum);
                                 updateURL(query, sort, sortField, sortOrder, view, showMap, pageNum, propertyType, propertySubtype);
@@ -799,26 +767,13 @@ function ListingsContent() {
                             >
                               {pageNum}
                             </Button>
-                          );
-                        })}
-                        {meta.totalPages > 1 && currentPage !== meta.totalPages && (
-                          <Button
-                            variant={
-                              currentPage === meta.totalPages
-                                ? "default"
-                                : "outline"
-                            }
-                            onClick={() => {
-                              setCurrentPage(meta.totalPages);
-                              updateURL(query, sort, sortField, sortOrder, view, showMap, meta.totalPages, propertyType, propertySubtype);
-                            }}
-                            className="w-10 h-10 p-0"
-                          >
-                            {meta.totalPages}
-                          </Button>
-                        )}
-                      </>
-                    )}
+                            {showDots && (
+                              <span className="px-2 text-muted-foreground">...</span>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
 
                   <Button

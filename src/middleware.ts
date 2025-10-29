@@ -22,6 +22,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // If user hit application/** without token, redirect to login with callback
+  if (pathname.startsWith("/application") && !token) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(url);
+  }
+
   // Normal users can access dashboard and all other routes
   return NextResponse.next();
 }

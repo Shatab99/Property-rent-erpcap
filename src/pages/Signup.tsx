@@ -39,15 +39,23 @@ export default function Signup() {
                   const password = String(data.get("password"));
                   const confirm = String(data.get("confirm"));
                   if (password.length < 8) return toastError("Password must be at least 8 characters long", { position: "bottom-center" });
-                  
+
                   if (password !== confirm) {
                     toastError("Passwords do not match", { position: "bottom-center" });
                     return;
                   }
                   const email = String(data.get("email"));
                   const name = String(data.get("name"));
+                  const phone = String(data.get("phone"));
 
-                  const res = await api.post("/users/create", { email, name, password })
+                  // Validate USA phone number format
+                  const phoneRegex = /^\+?1?[-.\s]?\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+                  if (!phoneRegex.test(phone)) {
+                    toastError("Please enter a valid USA phone number (e.g., +12345678901 or (234) 567-8901)", { position: "bottom-center" });
+                    return;
+                  }
+
+                  const res = await api.post("/users/create", { email, name, password, phone });
 
                   console.log(res)
 
@@ -83,6 +91,10 @@ export default function Signup() {
                   placeholder="you@example.com"
                   required
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input id="phone" placeholder="+124-45-6789" name="phone" type="tel" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

@@ -94,7 +94,7 @@ export default function PropertyApplicationsPage({
         ...(status !== "ALL" && { status }),
       })
 
-      const data = await api.get(`/admin/property-application?${query.toString()}`, {
+      const data = await api.get(`/admin/property-application?${query && query.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,10 +44,18 @@ export default function RentalApplicationWizard() {
   const [success, setSuccess] = useState("");
   const [isNext, setIsNext] = useState(true);
   const router = useRouter()
+  const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
 
 
   const progress = (currentStep / steps.length) * 100
   const CurrentStepComponent = steps[currentStep - 1].component
+
+  useEffect(() => {
+    if (!token) {
+      toastError("Please log in to apply for a rental.");
+      router.push("/login");
+    }
+  }, [])
 
   const handleNext = () => {
     if (currentStep < steps.length) {

@@ -54,6 +54,7 @@ interface PropertyData {
     listOfficeName: string;
     isVerified: boolean;
     mlsStatus: string;
+    canRent: boolean;
 }
 
 interface ApiResponse {
@@ -193,11 +194,6 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     property.mlsStatus === "Hold" ? "text-orange-400" : "text-red-600"}`}>
                                     <ShieldCheck size={14} /> {property.mlsStatus}
                                 </span>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold">
-                                ${property.price.toLocaleString()}
                             </div>
                         </div>
                     </div>
@@ -375,11 +371,10 @@ export default function PropertyDetails({ id }: { id: string }) {
                                                 <button
                                                     key={index}
                                                     onClick={() => setActiveImageIndex(index)}
-                                                    className={`h-2 rounded-full transition-all ${
-                                                        activeImageIndex === index
-                                                            ? "w-6 bg-primary"
-                                                            : "w-2 bg-gray-300 hover:bg-gray-400"
-                                                    }`}
+                                                    className={`h-2 rounded-full transition-all ${activeImageIndex === index
+                                                        ? "w-6 bg-primary"
+                                                        : "w-2 bg-gray-300 hover:bg-gray-400"
+                                                        }`}
                                                     aria-label={`Go to image ${index + 1}`}
                                                 />
                                             )
@@ -506,8 +501,8 @@ export default function PropertyDetails({ id }: { id: string }) {
                     <aside className="lg:sticky lg:top-24 h-max order-1 lg:order-2">
                         <div className="rounded-lg sm:rounded-xl border bg-white p-3 sm:p-4 md:p-6 shadow-sm">
                             <div className="text-sm text-muted-foreground">Price will be only</div>
-                            <div className="mt-1 text-3xl font-extrabold">
-                                ${property.price.toLocaleString()}
+                            <div className="mt-1 text-3xl font-extrabold font-sans">
+                                ${property.price.toLocaleString()}<span className="text-sm ">{`${property.canRent ? "/month" : ""}`}</span>
                             </div>
                             {property.originalPrice > property.price && (
                                 <div className="text-xs text-red-600 line-through">
@@ -527,34 +522,18 @@ export default function PropertyDetails({ id }: { id: string }) {
                                 </div>
                             </div>
 
-                            <Link href={`/application/${property.id}`} className="mt-4 flex gap-2">
-                                <Button className="flex-1">
-                                    Apply for rent
-                                </Button>
-                            </Link>
-
-                            {/* Agent Info */}
-                            {/* <div className="mt-6 pt-6 border-t">
-                                <h3 className="font-semibold text-sm">Listing Agent</h3>
-                                <p className="text-sm text-muted-foreground mt-2">{property.listAgentName}</p>
-                                <p className="text-sm text-muted-foreground">{property.listOfficeName}</p>
-                                <div className="mt-3 space-y-2">
-                                    <a
-                                        href={`tel:${property.listAgentPhone}`}
-                                        className="flex items-center gap-2 text-sm text-primary hover:underline"
-                                    >
-                                        <Phone size={14} />
-                                        {property.listAgentPhone}
-                                    </a>
-                                    <a
-                                        href={`mailto:${property.listAgentEmail}`}
-                                        className="flex items-center gap-2 text-sm text-primary hover:underline"
-                                    >
-                                        <Mail size={14} />
-                                        {property.listAgentEmail}
-                                    </a>
-                                </div>
-                            </div> */}
+                            {
+                                property.canRent ? <Link href={`/application/${property.listingKey}`} className="mt-4 flex gap-2">
+                                    <Button className="flex-1">
+                                        Apply for rent
+                                    </Button>
+                                </Link> :
+                                    <Link href={`/make-offer/${property.listingKey}`} className="mt-4 flex gap-2">
+                                        <Button className="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800">
+                                            Make an offer
+                                        </Button>
+                                    </Link>
+                            }
 
                             {/* Contact Form */}
                             <form

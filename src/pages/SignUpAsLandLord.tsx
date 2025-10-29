@@ -5,26 +5,60 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toastError, toastSuccess } from "@/lib/toast";
 import api from "@/lib/baseurl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Loader, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image";
 import { useFormData } from "@/hooks/useFormData";
 
-export default function SignupAsLandLord() {
+// Add custom fade-in animation styles
+const fadeInStyles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+  .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+  .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+  .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+  .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+`;
+
+function SignupAsLandLordContent() {
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1);
     const [userType, setUserType] = useState<"landlord" | "agent" | null>(null);
     const [mounted, setMounted] = useState(false);
+    const searchParams = useSearchParams()
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (searchParams?.get("signup") === "landlord") {
+            setStep(3);
+            setUserType("landlord");
+        }
+    }, [searchParams])
+
+
 
     // Step 1: Welcome Screen
     const WelcomeScreen = () => (
@@ -377,9 +411,13 @@ export default function SignupAsLandLord() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-6 sm:py-8 lg:py-16">
-            <section className="py-3 sm:py-4 lg:py-8">
-                <div className="mx-auto max-w-sm px-4 sm:max-w-2xl sm:px-6 md:max-w-5xl lg:max-w-7xl lg:px-8">
+        <>
+            {/* Inject animation styles */}
+            <style>{fadeInStyles}</style>
+            
+            <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-6 sm:py-8 lg:py-16 transition-all duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}>
+                <section className={`py-3 sm:py-4 lg:py-8 transition-all duration-700 ${mounted ? "animate-fade-in-up" : ""}`}>
+                    <div className="mx-auto max-w-sm px-4 sm:max-w-2xl sm:px-6 md:max-w-5xl lg:max-w-7xl lg:px-8">
                     {/* Desktop Layout: Two Column */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-20 items-center">
                         {/* Left Side: Branding & Features (Responsive) */}
@@ -502,7 +540,28 @@ export default function SignupAsLandLord() {
                         </div>
                     </div>
                 </div>
-            </section>
+                </section>
+            </div>
+        </>
+    );
+}
+
+// Loading fallback for Suspense
+function SignupAsLandLordFallback() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+            <div className="animate-pulse">
+                <div className="h-12 w-48 bg-gray-200 rounded-lg"></div>
+            </div>
         </div>
+    );
+}
+
+// Wrap with Suspense at export
+export default function SignupAsLandLord() {
+    return (
+        <Suspense fallback={<SignupAsLandLordFallback />}>
+            <SignupAsLandLordContent />
+        </Suspense>
     );
 }

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import api from "@/lib/baseurl";
 import { Loader } from "lucide-react";
 
@@ -35,6 +36,7 @@ type FavoriteProperty = {
   bedrooms: number;
   bathrooms: number;
   area: number;
+  image: string;
 };
 
 export default function Dashboard() {
@@ -240,15 +242,35 @@ export default function Dashboard() {
 
                     {/* Scrollable Content */}
                     <div className="h-[600px] sm:h-[700px] lg:h-[800px] overflow-y-auto">
-                      <div className="grid gap-4 p-4 sm:p-6">
+                      <div className="grid gap-4 p-4 sm:p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {favorites.map((property, idx) => (
                           <div
                             key={`${property.listingKey}-${idx}`}
-                            className="border border-gray-200 rounded-lg p-4 sm:p-5 hover:shadow-lg transition-all duration-300 hover:border-gray-300 bg-gradient-to-br from-white to-gray-50 group"
+                            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-gray-300 bg-white group flex flex-col"
                           >
-                            {/* Property Header */}
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-4">
-                              <div className="flex-1 min-w-0">
+                            {/* Property Image */}
+                            <div className="relative w-full h-48 sm:h-56 lg:h-64 overflow-hidden bg-gray-200">
+                              {property.image ? (
+                                <Image
+                                  src={property.image}
+                                  alt={property.title}
+                                  fill
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  onError={() => {
+                                    // Handle image error
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                                  <span className="text-gray-400">No Image</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Property Content */}
+                            <div className="p-4 sm:p-5 flex flex-col flex-1">
+                              {/* Property Header */}
+                              <div className="mb-4">
                                 <h3 className="font-bold text-sm sm:text-base line-clamp-2 text-foreground group-hover:text-blue-600 transition-colors">
                                   {property.title}
                                 </h3>
@@ -256,59 +278,61 @@ export default function Dashboard() {
                                   📍 {property.location}
                                 </p>
                               </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className="font-bold text-base sm:text-lg text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
+
+                              {/* Price */}
+                              <div className="mb-4">
+                                <p className="font-bold text-base sm:text-lg text-green-600 bg-green-50 px-3 py-1.5 rounded-lg w-fit">
                                   ${property.price.toLocaleString()}
                                 </p>
                               </div>
-                            </div>
 
-                            {/* Property Details Grid */}
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 text-center hover:shadow-md transition-all">
-                                <p className="font-bold text-sm sm:text-base text-blue-700">{property.bedrooms}</p>
-                                <p className="text-xs text-blue-600 font-medium mt-0.5">Beds</p>
+                              {/* Property Details Grid */}
+                              <div className="grid grid-cols-3 gap-2 mb-4">
+                                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 text-center hover:shadow-md transition-all">
+                                  <p className="font-bold text-xs sm:text-sm text-blue-700">{property.bedrooms}</p>
+                                  <p className="text-xs text-blue-600 font-medium mt-0.5">Beds</p>
+                                </div>
+                                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 text-center hover:shadow-md transition-all">
+                                  <p className="font-bold text-xs sm:text-sm text-purple-700">{property.bathrooms}</p>
+                                  <p className="text-xs text-purple-600 font-medium mt-0.5">Baths</p>
+                                </div>
+                                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 text-center hover:shadow-md transition-all">
+                                  <p className="font-bold text-xs sm:text-sm text-amber-700">{(property.area / 1000).toFixed(1)}k</p>
+                                  <p className="text-xs text-amber-600 font-medium mt-0.5">sqft</p>
+                                </div>
                               </div>
-                              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 text-center hover:shadow-md transition-all">
-                                <p className="font-bold text-sm sm:text-base text-purple-700">{property.bathrooms}</p>
-                                <p className="text-xs text-purple-600 font-medium mt-0.5">Baths</p>
-                              </div>
-                              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 text-center hover:shadow-md transition-all">
-                                <p className="font-bold text-sm sm:text-base text-amber-700">{(property.area / 1000).toFixed(1)}k</p>
-                                <p className="text-xs text-amber-600 font-medium mt-0.5">sqft</p>
-                              </div>
-                            </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex gap-2 pt-3 border-t border-gray-200">
-                              <Button
-                                asChild
-                                className="flex-1 sm:flex-1 lg:flex-auto bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm h-8 sm:h-9 rounded-lg transition-all"
-                              >
-                                <Link href={`/property/${property.listingKey}`}>
-                                  View Details
-                                </Link>
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  // Call API to remove from favorites
-                                  api.delete(`/users/favorite/${property.id}`, {
-                                    headers: {
-                                      Authorization: `Bearer ${token}`
-                                    }
-                                  }).then(() => {
-                                    setFavorites(favorites.filter((_, i) => i !== idx));
-                                    toast.success("Removed from favorites");
-                                    window.dispatchEvent(new Event("favorites-change"));
-                                  }).catch(() => {
-                                    toast.error("Failed to remove favorite");
-                                  });
-                                }}
-                                variant="outline"
-                                className="px-3 sm:px-4 lg:px-5 text-xs sm:text-sm h-8 sm:h-9 border-red-200 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
-                              >
-                                Remove
-                              </Button>
+                              {/* Action Buttons */}
+                              <div className="flex gap-2 pt-3 border-t border-gray-200 mt-auto">
+                                <Button
+                                  asChild
+                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm h-8 sm:h-9 rounded-lg transition-all"
+                                >
+                                  <Link href={`/property/${property.listingKey}`}>
+                                    View
+                                  </Link>
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    // Call API to remove from favorites
+                                    api.delete(`/users/favorite/${property.id}`, {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`
+                                      }
+                                    }).then(() => {
+                                      setFavorites(favorites.filter((_, i) => i !== idx));
+                                      toast.success("Removed from favorites");
+                                      window.dispatchEvent(new Event("favorites-change"));
+                                    }).catch(() => {
+                                      toast.error("Failed to remove favorite");
+                                    });
+                                  }}
+                                  variant="outline"
+                                  className="px-2 sm:px-3 text-xs sm:text-sm h-8 sm:h-9 border-red-200 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+                                >
+                                  Remove
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
