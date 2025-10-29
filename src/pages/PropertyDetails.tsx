@@ -602,7 +602,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     {/* Agent Info */}
                                     <div className="space-y-2.5">
                                         <a 
-                                            href={`tel:${property.listOfficePhone}`}
+                                            href={`tel:917-254-1954`}
                                             className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-4 py-2.5 rounded-lg w-fit transition-all shadow-sm hover:shadow-md"
                                         >
                                             <Phone size={14} />
