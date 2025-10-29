@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import api from "@/lib/baseurl";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PropertyData {
     id: string;
@@ -70,6 +71,7 @@ export default function PropertyDetails({ id }: { id: string }) {
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -523,19 +525,21 @@ export default function PropertyDetails({ id }: { id: string }) {
                             </div>
 
                             {
-                                property.canRent ? 
-                                <Link href={`/application/${property.listingKey}`} className="mt-4 flex gap-2">
-                                    <Button disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"} className="flex-1">
+                                property.canRent ?
+
+                                    <Button
+                                        onClick={() => router.push(`/application/${property.listingKey}`)}
+                                        disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"} className="mt-4 flex w-full">
                                         Apply for rent
                                     </Button>
-                                </Link> :
-                                    <Link href={`/make-offer/${property.listingKey}`} className="mt-4 flex gap-2">
-                                        <Button className="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800"
-                                            disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"}
-                                        >
-                                            Make an offer
-                                        </Button>
-                                    </Link>
+                                    :
+                                    <Button
+                                        onClick={() => router.push(`/make-offer/${property.listingKey}`)}
+                                        className="mt-4 flex w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800"
+                                        disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"}
+                                    >
+                                        Make an offer
+                                    </Button>
                             }
 
                             {/* Contact Form */}
