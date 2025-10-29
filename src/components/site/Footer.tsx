@@ -95,7 +95,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Rentora, Inc. All rights reserved.
+        © {new Date().getFullYear()} SK Real Estate, All rights reserved.
       </div>
     </footer>
   );

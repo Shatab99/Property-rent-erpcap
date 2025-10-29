@@ -204,6 +204,89 @@ export default function PropertyDetails({ id }: { id: string }) {
                 </div>
             </section>
 
+            {/* Mobile Gallery - Visible only on small/medium devices */}
+            <section className="lg:hidden bg-white border-b mt-2 ">
+                <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
+                    {/* Mobile Carousel */}
+                    <div className="relative w-full h-64 sm:h-80 overflow-hidden bg-gray-100">
+                        {/* Loading Skeleton - only show if image is actually loading (not loaded yet) */}
+                        {!allImagesFailed && !imagesLoaded[activeImageIndex] && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse z-5" />
+                        )}
+
+                        {allImagesFailed ? (
+                            <img
+                                src="/no_img.jpg"
+                                alt="No image available"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : !imageError[activeImageIndex] ? (
+                            <Image
+                                src={property.images[activeImageIndex]}
+                                alt={`${property.title} ${activeImageIndex + 1}`}
+                                fill
+                                className="object-cover"
+                                onError={() => handleImageError(activeImageIndex)}
+                                onLoad={() => handleImageLoad(activeImageIndex)}
+                                priority
+                            />
+                        ) : (
+                            <Image
+                                src={property.images[getNextValidImageIndex(activeImageIndex, 'next')]}
+                                alt={`${property.title}`}
+                                fill
+                                className="object-cover"
+                                onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                onLoad={() => handleImageLoad(getNextValidImageIndex(activeImageIndex, 'next'))}
+                                priority
+                            />
+                        )}
+
+                        {/* Mobile Navigation - Larger touch targets */}
+                        <button
+                            onClick={handlePrevImage}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                            aria-label="Previous image"
+                        >
+                            <ChevronLeft size={24} className="sm:w-6 sm:h-6" />
+                        </button>
+                        <button
+                            onClick={handleNextImage}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
+                            aria-label="Next image"
+                        >
+                            <ChevronRight size={24} className="sm:w-6 sm:h-6" />
+                        </button>
+
+                        {/* Mobile Image Counter */}
+                        <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium">
+                            {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
+                        </div>
+                    </div>
+
+                    {/* Mobile Dot Indicators */}
+                    <div className="bg-gray-50 border-t p-3 sm:p-4 flex justify-center gap-2 sm:gap-2.5">
+                        {allImagesFailed ? (
+                            <div className="text-xs sm:text-sm text-muted-foreground py-2">No images available</div>
+                        ) : (
+                            property.images.map((_, index) => (
+                                !imageError[index] && (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveImageIndex(index)}
+                                        className={`h-2 sm:h-2.5 rounded-full transition-all ${activeImageIndex === index
+                                            ? "w-6 sm:w-8 bg-primary"
+                                            : "w-2 sm:w-2.5 bg-gray-300 hover:bg-gray-400"
+                                            }`}
+                                        aria-label={`Go to image ${index + 1}`}
+                                    />
+                                )
+                            ))
+                        )}
+                    </div>
+                </div>
+            </section>
+
             {/* Content */}
             <section className="py-4 sm:py-6 md:py-8">
                 <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 grid gap-6 sm:gap-8 lg:grid-cols-3">
@@ -306,86 +389,7 @@ export default function PropertyDetails({ id }: { id: string }) {
                                 </div>
                             </div>
 
-                            {/* Mobile Carousel - Visible only on Mobile */}
-                            <div className="lg:hidden">
-                                {/* Mobile Full-Screen Carousel */}
-                                <div className="relative w-full h-64 overflow-hidden bg-gray-100">
-                                    {/* Loading Skeleton - only show if image is actually loading (not loaded yet) */}
-                                    {!allImagesFailed && !imagesLoaded[activeImageIndex] && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse z-5" />
-                                    )}
-
-                                    {allImagesFailed ? (
-                                        <img
-                                            src="/no_img.jpg"
-                                            alt="No image available"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : !imageError[activeImageIndex] ? (
-                                        <Image
-                                            src={property.images[activeImageIndex]}
-                                            alt={`${property.title} ${activeImageIndex + 1}`}
-                                            fill
-                                            className="object-cover"
-                                            onError={() => handleImageError(activeImageIndex)}
-                                            onLoad={() => handleImageLoad(activeImageIndex)}
-                                            priority
-                                        />
-                                    ) : (
-                                        <Image
-                                            src={property.images[getNextValidImageIndex(activeImageIndex, 'next')]}
-                                            alt={`${property.title}`}
-                                            fill
-                                            className="object-cover"
-                                            onError={() => handleImageError(getNextValidImageIndex(activeImageIndex, 'next'))}
-                                            onLoad={() => handleImageLoad(getNextValidImageIndex(activeImageIndex, 'next'))}
-                                            priority
-                                        />
-                                    )}
-
-                                    {/* Mobile Navigation - Larger touch targets */}
-                                    <button
-                                        onClick={handlePrevImage}
-                                        className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
-                                        aria-label="Previous image"
-                                    >
-                                        <ChevronLeft size={24} />
-                                    </button>
-                                    <button
-                                        onClick={handleNextImage}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md transition-all z-10"
-                                        aria-label="Next image"
-                                    >
-                                        <ChevronRight size={24} />
-                                    </button>
-
-                                    {/* Mobile Image Counter */}
-                                    <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
-                                        {allImagesFailed ? "No images" : `${activeImageIndex + 1} / ${property.images.length}`}
-                                    </div>
-                                </div>
-
-                                {/* Mobile Dot Indicators */}
-                                <div className="bg-gray-50 border-t p-3 flex justify-center gap-1.5">
-                                    {allImagesFailed ? (
-                                        <div className="text-xs text-muted-foreground">No images available</div>
-                                    ) : (
-                                        property.images.map((_, index) => (
-                                            !imageError[index] && (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => setActiveImageIndex(index)}
-                                                    className={`h-2 rounded-full transition-all ${activeImageIndex === index
-                                                        ? "w-6 bg-primary"
-                                                        : "w-2 bg-gray-300 hover:bg-gray-400"
-                                                        }`}
-                                                    aria-label={`Go to image ${index + 1}`}
-                                                />
-                                            )
-                                        ))
-                                    )}
-                                </div>
-                            </div>
+                            {/* Mobile Carousel moved to after Title + Meta section */}
                         </div>
 
                         {/* Specs */}
@@ -499,6 +503,48 @@ export default function PropertyDetails({ id }: { id: string }) {
                                 />
                             </div>
                         </div>
+
+                        {/* Listing Agent Section - Mobile/Tablet */}
+                        {(property.listAgentName || property.listOfficeName) && (
+                            <div className="lg:hidden mt-8 p-4 sm:p-5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm">
+                                {/* Header */}
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-1 h-5 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
+                                    <div className="text-xs sm:text-sm font-bold text-blue-700 uppercase tracking-widest">Listing Agent</div>
+                                </div>
+
+                                {/* Agent Info */}
+                                <div className="space-y-3 sm:space-y-3.5">
+                                    {property.listAgentName && (
+                                        <div>
+                                            <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">{property.listAgentName}</p>
+                                        </div>
+                                    )}
+                                    {property.listOfficeName && (
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-sm text-gray-500 flex-shrink-0">📋</span>
+                                            <p className="text-xs sm:text-sm text-gray-700">Brokered by <span className="font-semibold text-gray-900">{property.listOfficeName}</span></p>
+                                        </div>
+                                    )}
+                                    {property.listOfficePhone && (
+                                        <p className="flex items-center gap-2 text-sm sm:text-base"
+                                        >
+                                            {property.listOfficePhone}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Footer Info */}
+                                <div className="mt-4 pt-4 border-t border-blue-200/50 space-y-1.5">
+                                    <p className="text-[11px] sm:text-xs text-gray-600">
+                                        <span className="font-semibold">MLS #:</span> {property.propertyId}
+                                    </p>
+                                    <p className="text-[10px] sm:text-xs text-gray-500">
+                                        OneKey™ MLS. © 2025, All Rights Reserved.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right - contact + actions */}
@@ -544,51 +590,28 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     </Button>
                             }
 
-                            {/* Listing Agent Section */}
+                            {/* Contact Information */}
                             {(property.listAgentName || property.listOfficeName) && (
                                 <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
                                     {/* Header */}
                                     <div className="flex items-center gap-2 mb-3">
                                         <div className="w-1 h-4 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
-                                        <div className="text-xs font-bold text-blue-700 uppercase tracking-widest">Listing Agent</div>
+                                        <div className="text-xs font-bold text-blue-700 uppercase tracking-widest">Contact with us</div>
                                     </div>
 
                                     {/* Agent Info */}
                                     <div className="space-y-2.5">
-                                        {property.listAgentName && (
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900 leading-tight">{property.listAgentName}</p>
-                                            </div>
-                                        )}
-                                        {property.listOfficeName && (
-                                            <div className="flex items-start gap-1.5">
-                                                <span className="text-xs text-gray-500 mt-0.5 flex-shrink-0">📋</span>
-                                                <p className="text-xs text-gray-700">Brokered by <span className="font-semibold text-gray-900">{property.listOfficeName}</span></p>
-                                            </div>
-                                        )}
-                                        {property.listOfficePhone && (
-                                            <a
-                                                href={`tel:${property.listOfficePhone}`}
-                                                className="flex items-center gap-1 text-xs "
-                                            >
-                                                <Phone size={14} />
-                                                {property.listOfficePhone}
-                                            </a>
-                                        )}
+                                        <a 
+                                            href={`tel:${property.listOfficePhone}`}
+                                            className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-4 py-2.5 rounded-lg w-fit transition-all shadow-sm hover:shadow-md"
+                                        >
+                                            <Phone size={14} />
+                                            917-254-1954
+                                        </a>
                                     </div>
 
-                                    {/* Footer Info */}
-                                    <div className="mt-4 pt-3 border-t border-blue-200/50 space-y-1">
-                                        <p className="text-[11px] font-mono text-gray-600">
-                                            <span className="font-bold font-sans">MLS #:</span> {property.propertyId}
-                                        </p>
-                                        <p className="text-[11px] font-semibold text-gray-500">
-                                            © 2025, OneKey™ MLS. All Rights Reserved.
-                                        </p>
-                                    </div>
                                 </div>
                             )}
-
                             {/* Contact Form */}
                             <form
                                 className="mt-6 space-y-3"
@@ -646,6 +669,47 @@ export default function PropertyDetails({ id }: { id: string }) {
                                     By contacting, you agree to our Terms and Privacy Policy.
                                 </p>
                             </form>
+                            {/* Listing Agent Section */}
+                            {(property.listAgentName || property.listOfficeName) && (
+                                <div className="hidden lg:block  mt-6 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                                    {/* Header */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-1 h-4 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
+                                        <div className="text-xs font-bold text-blue-700 uppercase tracking-widest">Listing Agent</div>
+                                    </div>
+
+                                    {/* Agent Info */}
+                                    <div className="space-y-2.5">
+                                        {property.listAgentName && (
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">{property.listAgentName}</p>
+                                            </div>
+                                        )}
+                                        {property.listOfficeName && (
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs text-gray-500 mt-0.5 flex-shrink-0">📋</span>
+                                                <p className="text-xs text-gray-700">Brokered by <span className="font-semibold text-gray-900">{property.listOfficeName}</span></p>
+                                            </div>
+                                        )}
+                                        {property.listOfficePhone && (
+                                            <p className="flex items-center gap-1 text-xs "
+                                            >
+                                                {property.listOfficePhone}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Footer Info */}
+                                    <div className="mt-4 pt-3 border-t border-blue-200/50 space-y-1">
+                                        <p className="text-[11px] font-mono text-gray-600">
+                                            <span className="font-bold font-sans">MLS #:</span> {property.propertyId}
+                                        </p>
+                                        <p className="text-[11px] font-semibold text-gray-500">
+                                            OneKey™ MLS. © 2025, All Rights Reserved.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </aside>
                 </div>
