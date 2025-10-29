@@ -523,13 +523,16 @@ export default function PropertyDetails({ id }: { id: string }) {
                             </div>
 
                             {
-                                property.canRent ? <Link href={`/application/${property.listingKey}`} className="mt-4 flex gap-2">
-                                    <Button className="flex-1">
+                                property.canRent ? 
+                                <Link href={`/application/${property.listingKey}`} className="mt-4 flex gap-2">
+                                    <Button disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"} className="flex-1">
                                         Apply for rent
                                     </Button>
                                 </Link> :
                                     <Link href={`/make-offer/${property.listingKey}`} className="mt-4 flex gap-2">
-                                        <Button className="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800">
+                                        <Button className="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800"
+                                            disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"}
+                                        >
                                             Make an offer
                                         </Button>
                                     </Link>
