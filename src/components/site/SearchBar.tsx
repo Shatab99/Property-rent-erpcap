@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import api from "@/lib/baseurl";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearchInput";
 
 interface SearchSuggestion {
   city?: {
@@ -147,7 +148,7 @@ export default function SearchBar() {
 
   const search = () => {
     if (searchInput.trim() === "") return;
-    router.push(`/listings?search=${searchInput}`);
+    router.push(`/listings?search=${sanitizeSearchInput(searchInput)}`);
     setShowSuggestions(false);
   };
 
@@ -173,9 +174,9 @@ export default function SearchBar() {
     <div className="w-full space-y-4 font-sans">
       {/* Action Buttons - Responsive Grid */}
       <div className="flex flex-wrap gap-2.5 justify-center">
-        <Link href="/listings?search=&propertyType=Residential" passHref>
+        <Link href="/vendor" passHref>
           <Button variant="outline" className="rounded-lg font-semibold">
-            Buy
+            Pre-Approval
           </Button>
         </Link>
         <Link href="/vendor?signup=landlord" passHref>
@@ -183,14 +184,14 @@ export default function SearchBar() {
             Sell
           </Button>
         </Link>
+        <Link href="/listings?search=&propertyType=Residential" passHref>
+          <Button variant="outline" className="rounded-lg font-semibold">
+            Buy
+          </Button>
+        </Link>
         <Link href="/listings?search=&propertyType=Residential%20Lease" passHref>
           <Button variant="outline" className="rounded-lg font-semibold">
             Rent
-          </Button>
-        </Link>
-        <Link href="/vendor" passHref>
-          <Button variant="outline" className="rounded-lg font-semibold">
-            Pre-Approval
           </Button>
         </Link>
       </div>

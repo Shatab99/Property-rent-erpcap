@@ -17,6 +17,7 @@ import {
 import { LayoutGrid, Search, Loader2, MapPin, Home, Check, Menu, X } from "lucide-react";
 import api from "@/lib/baseurl";
 import { get } from "http";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearchInput";
 
 type ViewMode = "grid";
 
@@ -218,9 +219,9 @@ function ListingsContent() {
 
   // Handle search button click
   const handleSearch = () => {
-    setQuery(searchInput);
+    setQuery(sanitizeSearchInput(searchInput));
     setCurrentPage(1);
-    updateURL(searchInput, sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
+    updateURL(sanitizeSearchInput(searchInput), sort, sortField, sortOrder, view, showMap, 1, propertyType, propertySubtype);
   };
 
   const handleHidePendingContingent = () => {

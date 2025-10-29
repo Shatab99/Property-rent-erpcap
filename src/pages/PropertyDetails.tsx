@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 interface PropertyData {
     id: string;
     listingKey: string;
+    propertyId: string;
     title: string;
     description: string;
     propertyType: string;
@@ -53,6 +54,7 @@ interface PropertyData {
     listAgentEmail: string;
     listAgentPhone: string;
     listOfficeName: string;
+    listOfficePhone: string;
     isVerified: boolean;
     mlsStatus: string;
     canRent: boolean;
@@ -175,8 +177,8 @@ export default function PropertyDetails({ id }: { id: string }) {
     // Check if we have any valid images at all
     const hasValidImages = validImages.length > 0;
 
-    const mapQuery = encodeURIComponent(`${property.address}, ${property.city}`);
-    const fullAddress = `${property.address}, ${property.city}, ${property.stateOrProvince} ${property.postalCode}`;
+    const fullAddress = `${property.address}`;
+    const mapQuery = encodeURIComponent(`${fullAddress}`);
 
     return (
         <div className="bg-white">
@@ -541,6 +543,51 @@ export default function PropertyDetails({ id }: { id: string }) {
                                         Make an offer
                                     </Button>
                             }
+
+                            {/* Listing Agent Section */}
+                            {(property.listAgentName || property.listOfficeName) && (
+                                <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                                    {/* Header */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-1 h-4 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
+                                        <div className="text-xs font-bold text-blue-700 uppercase tracking-widest">Listing Agent</div>
+                                    </div>
+
+                                    {/* Agent Info */}
+                                    <div className="space-y-2.5">
+                                        {property.listAgentName && (
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">{property.listAgentName}</p>
+                                            </div>
+                                        )}
+                                        {property.listOfficeName && (
+                                            <div className="flex items-start gap-1.5">
+                                                <span className="text-xs text-gray-500 mt-0.5 flex-shrink-0">📋</span>
+                                                <p className="text-xs text-gray-700">Brokered by <span className="font-semibold text-gray-900">{property.listOfficeName}</span></p>
+                                            </div>
+                                        )}
+                                        {property.listOfficePhone && (
+                                            <a
+                                                href={`tel:${property.listOfficePhone}`}
+                                                className="flex items-center gap-1 text-xs "
+                                            >
+                                                <Phone size={14} />
+                                                {property.listOfficePhone}
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    {/* Footer Info */}
+                                    <div className="mt-4 pt-3 border-t border-blue-200/50 space-y-1">
+                                        <p className="text-[11px] font-mono text-gray-600">
+                                            <span className="font-bold font-sans">MLS #:</span> {property.propertyId}
+                                        </p>
+                                        <p className="text-[11px] font-semibold text-gray-500">
+                                            © 2025, OneKey™ MLS. All Rights Reserved.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Contact Form */}
                             <form
