@@ -529,14 +529,14 @@ export default function PropertyDetails({ id }: { id: string }) {
 
                                     <Button
                                         onClick={() => router.push(`/application/${property.listingKey}`)}
-                                        disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"} className="mt-4 flex w-full">
+                                        disabled={!(property.mlsStatus === "Active")} className="mt-4 flex w-full">
                                         Apply for rent
                                     </Button>
                                     :
                                     <Button
                                         onClick={() => router.push(`/make-offer/${property.listingKey}`)}
                                         className="mt-4 flex w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 text-white hover:from-blue-600 hover:to-blue-800"
-                                        disabled={property.mlsStatus === "Sold" || property.mlsStatus === "Pending" || property.mlsStatus === "Rented" || property.mlsStatus === "Hold" || property.mlsStatus === "Withdrawn"}
+                                        disabled={!(property.mlsStatus === "Active")}
                                     >
                                         Make an offer
                                     </Button>
