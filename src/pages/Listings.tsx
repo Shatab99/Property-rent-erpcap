@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGrid, Search, Loader2, MapPin, Home, Check, Menu, X } from "lucide-react";
+import { LayoutGrid, Search, Loader2, MapPin, Home, Check, Menu, X, Map } from "lucide-react";
 import api from "@/lib/baseurl";
 import { get } from "http";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearchInput";
@@ -32,6 +32,7 @@ interface PropertyImage {
   images: string[];
   address: string;
   city: string;
+  county?: string;
   mlsStatus?: string;
 }
 
@@ -409,9 +410,33 @@ function ListingsContent() {
                 )}
               </div>
             </div>
-            <Button className="gap-2 h-11 px-6 rounded-lg shadow-sm hover:shadow-md transition-shadow" onClick={handleSearch}>
-              <Search size={18} /> <span className="hidden sm:inline">Search</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button className="gap-2 h-11 px-6 rounded-lg shadow-sm hover:shadow-md transition-shadow" onClick={handleSearch}>
+                <Search size={18} /> <span className="hidden sm:inline">Search</span>
+              </Button>
+              {/* Map View Button */}
+              <div className="w-full sm:w-auto">
+                <Button
+                  onClick={() => {
+                    const params = new URLSearchParams();
+                    if (query) params.set("search", query);
+                    params.set("sort", sort);
+                    params.set("sortField", sortField);
+                    params.set("sortOrder", sortOrder);
+                    params.set("page", "1");
+                    if (hidePendingContingent) params.set("mlsStatus", "Active");
+                    if (propertyType) params.set("propertyType", propertyType);
+                    if (propertySubtype) params.set("propertySubtype", propertySubtype);
+                    router.push(`/listings-map-view?${params.toString()}`);
+                  }}
+                  variant="outline"
+                  className="gap-2 w-full sm:w-auto h-10 rounded-lg shadow-sm hover:shadow-md transition-all text-sm"
+                >
+                  <Map size={16} />
+                  <span className="hidden sm:inline">Map View</span>
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Filters Section */}
@@ -552,7 +577,26 @@ function ListingsContent() {
                 {/* View Toggle */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">View</label>
-                  <p className="text-sm text-muted-foreground">Grid View</p>
+                  <Button
+                    onClick={() => {
+                      const params = new URLSearchParams();
+                      if (query) params.set("search", query);
+                      params.set("sort", sort);
+                      params.set("sortField", sortField);
+                      params.set("sortOrder", sortOrder);
+                      params.set("page", "1");
+                      if (hidePendingContingent) params.set("mlsStatus", "Active");
+                      if (propertyType) params.set("propertyType", propertyType);
+                      if (propertySubtype) params.set("propertySubtype", propertySubtype);
+                      router.push(`/listings-map-view?${params.toString()}`);
+                      setIsFilterMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="gap-2 w-full h-10 rounded-lg text-sm"
+                  >
+                    <Map size={16} />
+                    Map View
+                  </Button>
                 </div>
 
                 {/* Close Button at Bottom */}
@@ -702,7 +746,7 @@ function ListingsContent() {
                         baths: p.bathrooms ?? 0,
                         sqft: p.area ?? 0,
                         image: p.images[0] ?? "",
-                        location: p.city,
+                        location: p.county ?? "",
                         images: p.images,
                         mlsStatus: p.mlsStatus,
                         listingKey: p.listingKey,
