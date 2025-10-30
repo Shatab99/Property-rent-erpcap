@@ -75,8 +75,11 @@ export default function FindAgent() {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <p className="text-3xl font-semibold text-center mt-28 animate-pulse">Feature under construction....</p>
+          </div>
 
-          <div className="mt-6 grid gap-4">
+          {/* <div className="mt-6 grid gap-4">
             {filtered.map((a) => (
               <AgentCard key={a.id} agent={a} />
             ))}
@@ -85,7 +88,7 @@ export default function FindAgent() {
                 No agents match your filters.
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </section>
     </div>
