@@ -527,10 +527,11 @@ export default function PropertyDetails({ id }: { id: string }) {
                                         </div>
                                     )}
                                     {property.listOfficePhone && (
-                                        <p className="flex items-center gap-2 text-sm sm:text-base"
-                                        >
-                                            {property.listOfficePhone}
-                                        </p>
+                                        <input className="flex text-slate-500 items-center gap-2 text-sm sm:text-base cursor-not-allowed select-none pointer-events-none"
+                                            value={property.listOfficePhone}
+                                            readOnly
+                                            disabled
+                                        />
                                     )}
                                 </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import { Button } from "@/components/ui/button";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -21,7 +21,21 @@ interface PropertyMapProps {
   }>;
   center: [number, number];
   onMarkerClick: (listingKey: string) => void;
+  onMapClick?: (lat: number, lng: number) => void;
+  onCountyClick?: (countyName: string) => void;
   loading: boolean;
+  counties?: Record<string, [number, number]>;
+  showCountyCircles?: boolean;
+  isCountySelected?: boolean;
+  selectedCountyCoordinates?: [number, number];
+}
+
+// Zoom configuration types
+interface ZoomConfig {
+  minZoom: number;
+  maxZoom: number;
+  initialZoom: number;
+  countyZoom: number;
 }
 
 // Custom icon for markers
@@ -39,14 +53,94 @@ const createPropertyMarker = () => {
 };
 
 // Component to handle map updates when center changes
-function MapUpdater({ center }: { center: [number, number] }) {
+function MapUpdater({ 
+  center, 
+  isCountySelected,
+  previousCountySelected 
+}: { 
+  center: [number, number];
+  isCountySelected: boolean;
+  previousCountySelected: React.MutableRefObject<boolean>;
+}) {
   const map = useMap();
 
   useEffect(() => {
-    if (map && center) {
-      map.setView(center, map.getZoom());
+    if (!map || !center) return;
+
+    // Use flyTo for smooth transition when county is selected
+    if (isCountySelected && !previousCountySelected.current) {
+      // Transitioning from county circles to county view
+      map.flyTo(center, 13, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
+      previousCountySelected.current = true;
+    } else if (!isCountySelected && previousCountySelected.current) {
+      // Transitioning back to county circles view
+      map.flyTo(center, 7, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
+      previousCountySelected.current = false;
+    } else {
+      // Simple setView for regular updates
+      map.setView(center, map.getZoom(), { animate: true });
     }
-  }, [center, map]);
+  }, [center, isCountySelected, map, previousCountySelected]);
+
+  return null;
+}
+
+// Component to manage dynamic zoom constraints
+function ZoomController({ 
+  isCountySelected,
+  minZoom: initialMinZoom = 5,
+  maxZoom: initialMaxZoom = 10,
+  countyMinZoom = 10,
+  countyMaxZoom = 18,
+}: { 
+  isCountySelected: boolean;
+  minZoom?: number;
+  maxZoom?: number;
+  countyMinZoom?: number;
+  countyMaxZoom?: number;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    if (isCountySelected) {
+      // County view: allow deeper zoom-in
+      map.setMinZoom(countyMinZoom);
+      map.setMaxZoom(countyMaxZoom);
+    } else {
+      // County circles view: broader view
+      map.setMinZoom(initialMinZoom);
+      map.setMaxZoom(initialMaxZoom);
+    }
+  }, [isCountySelected, map, initialMinZoom, initialMaxZoom, countyMinZoom, countyMaxZoom]);
+
+  return null;
+}
+
+// Component to handle map click events
+function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !onMapClick) return;
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+      onMapClick(e.latlng.lat, e.latlng.lng);
+    };
+
+    map.on("click", handleMapClick);
+
+    return () => {
+      map.off("click", handleMapClick);
+    };
+  }, [map, onMapClick]);
 
   return null;
 }
@@ -55,27 +149,110 @@ export default function PropertyMap({
   markers,
   center,
   onMarkerClick,
+  onMapClick,
+  onCountyClick,
   loading,
+  counties,
+  showCountyCircles = true,
+  isCountySelected = false,
+  selectedCountyCoordinates,
 }: PropertyMapProps) {
   const markerIcon = createPropertyMarker();
+  const previousCountySelectedRef = React.useRef(false);
 
   if (loading) {
     return null;
   }
 
-//   console.log(markers)
-
-  if (markers.length === 0) {
+  // Allow rendering map if we have markers OR if we should show county circles
+  if (markers.length === 0 && !showCountyCircles) {
     return null;
   }
 
+  // Determine the actual center to use for the map
+  const mapCenter = isCountySelected && selectedCountyCoordinates 
+    ? selectedCountyCoordinates 
+    : center;
+
   return (
-    <MapContainer center={center} zoom={13} className="w-full h-screen px-3 py-3 sm:p-0 sm:mx-auto sm:container sm:h-full z-0">
-        <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-      <MapUpdater center={center} />
+    <MapContainer 
+      center={mapCenter} 
+      zoom={isCountySelected ? 13 : 7} 
+      minZoom={5}
+      maxZoom={10}
+      className="w-full h-screen px-3 py-3 sm:p-0 sm:mx-auto sm:container sm:h-full z-0"
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <MapUpdater 
+        center={mapCenter} 
+        isCountySelected={isCountySelected}
+        previousCountySelected={previousCountySelectedRef}
+      />
+      <ZoomController 
+        isCountySelected={isCountySelected}
+        minZoom={5}
+        maxZoom={10}
+        countyMinZoom={10}
+        countyMaxZoom={18}
+      />
+      <MapClickHandler onMapClick={onMapClick} />
+      {/* Render county circles only when showCountyCircles is true */}
+      {showCountyCircles && counties && Object.entries(counties).map(([countyName, [lat, lng]]) => (
+        <React.Fragment key={countyName}>
+          <Circle
+            center={[lat, lng]}
+            radius={10000}
+            pathOptions={{
+              fillColor: "#3b82f6",
+              fillOpacity: 0.2,
+              color: "#3b82f6",
+              weight: 2,
+              opacity: 0.6,
+            }}
+            eventHandlers={{
+              click: () => {
+                onCountyClick?.(countyName);
+              },
+            }}
+          />
+          <Marker
+            position={[lat, lng]}
+            icon={L.divIcon({
+              html: `<div style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+              ">
+                <span style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #1e40af;
+                  text-align: center;
+                  background: rgba(255, 255, 255, 0.9);
+                  padding: 4px 8px;
+                  border-radius: 4px;
+                  white-space: nowrap;
+                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                ">${countyName}</span>
+              </div>`,
+              className: "county-label",
+              iconSize: [140, 40],
+              iconAnchor: [70, 20],
+            })}
+            eventHandlers={{
+              click: () => {
+                onCountyClick?.(countyName);
+              },
+            }}
+          />
+        </React.Fragment>
+      ))}
       {markers.map((marker) => (
         <Marker key={marker.id} position={marker.coordinates} icon={markerIcon}>
           <Popup className="property-popup">
