@@ -15,6 +15,7 @@ export interface Property {
   baths: number;
   sqft: number;
   image: string;
+  city?: string;
   images?: string[];
   pets?: { cats: boolean; dogs: boolean };
   amenities?: string[];
@@ -112,7 +113,7 @@ export default function PropertyCard({ property }: { property: Property }) {
     setImageError((prev) => ({ ...prev, [index]: true }));
   };
   return (
-    <div 
+    <div
       onClick={handleCardClick}
       className="group overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
     >
@@ -192,7 +193,7 @@ export default function PropertyCard({ property }: { property: Property }) {
         <div className="absolute left-3 bottom-3 rounded-md bg-black/60 px-2 py-1 text-xs text-white">
           <div className="flex items-center gap-1">
             <MapPin size={12} />
-            {property.location}
+            {property.city}
           </div>
         </div>
       </div>

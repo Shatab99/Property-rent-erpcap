@@ -748,6 +748,7 @@ function ListingsContent() {
                         image: p.images[0] ?? "",
                         location: p.county ?? "",
                         images: p.images,
+                        city: p.city,
                         mlsStatus: p.mlsStatus,
                         listingKey: p.listingKey,
                       }}
