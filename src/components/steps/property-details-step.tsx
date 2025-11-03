@@ -27,7 +27,7 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
 
   useEffect(() => {
     fetchPropertyData();
-  }, [])
+  }, [formData.listingKey])
 
   // Auto-fill property details when data is fetched
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
         securityDeposit: propertyData.securityDeposit || "",
       })
     }
-  }, [propertyData])
+  }, [propertyData, updateFormData])
 
   const handleChange = (field: string, value: any) => {
     updateFormData({ [field]: value })

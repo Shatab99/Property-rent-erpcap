@@ -72,7 +72,8 @@ export default function RentalApplicationWizard() {
   const [success, setSuccess] = useState("");
   const [isStepValid, setIsStepValid] = useState(false);
   const router = useRouter()
-  const { id } = useParams() as { id: string };
+  const params = useParams();
+  const id = params?.id as string | undefined;
   const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
 
   const progress = (currentStep / steps.length) * 100
@@ -86,7 +87,7 @@ export default function RentalApplicationWizard() {
       // Set listingKey in form data by default
       setFormData(prev => ({ ...prev, listingKey: id }))
     }
-  }, [token, id])
+  }, [token, id, router])
 
 
   // Validate current step whenever formData changes
