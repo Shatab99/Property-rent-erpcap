@@ -10,7 +10,6 @@ api.interceptors.request.use(
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/token`);
       const data = await response.json();
-      console.log(data.data)
       if (data.data) {
         config.headers["x-internal-key"] = data.data;
       }
