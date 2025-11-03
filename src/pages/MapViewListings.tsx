@@ -148,6 +148,7 @@ function ListingsMapContent() {
     const [dragStartY, setDragStartY] = useState(0);
     const [dragOffset, setDragOffset] = useState(0);
     const bottomSheetRef = useRef<HTMLDivElement>(null);
+    const [isDesktopPanelVisible, setIsDesktopPanelVisible] = useState(true);
 
     // Pagination state for "Load More" button
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -239,10 +240,10 @@ function ListingsMapContent() {
         const fetchCounties = async () => {
             try {
                 setCountiesLoading(true);
-                const response = await api.get<{ 
-                    success: boolean; 
+                const response = await api.get<{
+                    success: boolean;
                     message: string;
-                    data: string[] 
+                    data: string[]
                 }>('/properties/all-counties');
 
                 if (response.data.success && Array.isArray(response.data.data)) {
@@ -276,7 +277,7 @@ function ListingsMapContent() {
             try {
                 setLoading(true);
                 const params = new URLSearchParams();
-                params.set("limit", "50");
+                params.set("limit", "25");
                 params.set("page", currentPage.toString());
                 params.set("search", query);
                 params.set("sortBy", sortField);
@@ -445,7 +446,7 @@ function ListingsMapContent() {
     const handleLoadMore = async () => {
         // Prevent duplicate requests
         if (loadMoreInFlightRef.current || isLoadingMore) return;
-        
+
         // Check if there are more pages to load
         if (meta.currentPage >= meta.totalPages) return;
 
@@ -455,7 +456,7 @@ function ListingsMapContent() {
         try {
             const nextPage = meta.currentPage + 1;
             const params = new URLSearchParams();
-            params.set("limit", "50");
+            params.set("limit", "25");
             params.set("page", nextPage.toString());
             params.set("search", query);
             params.set("sortBy", sortField);
@@ -899,21 +900,27 @@ function ListingsMapContent() {
 
             {/* Properties Count Section */}
             {selectedCounty && mapMarkers.length > 0 && (
-                <div className="bg-blue-50 border-b px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+                <div className="flex bg-blue-50 border-b px-4 sm:px-6 lg:px-8 py-3 sm:py-4 items-center justify-between">
                     <div className="mx-auto max-w-7xl">
                         <p className="text-sm sm:text-base font-medium text-gray-900">
-                            Showing <span className="font-bold text-blue-600">{mapMarkers.length}</span> 
-                            {mapMarkers.length === 1 ? " property" : " properties"} in 
+                            Showing <span className="font-bold text-blue-600">{mapMarkers.length}</span>
+                            {mapMarkers.length === 1 ? " property" : " properties"} in
                             <span className="font-bold text-blue-600"> {selectedCounty}</span>
                         </p>
                     </div>
+                    <button
+                        onClick={() => setIsDesktopPanelVisible(!isDesktopPanelVisible)}
+                        className="hidden lg:block text-sm font-semibold cursor-pointer text-blue-600 hover:text-blue-700 hover:border-b-2 hover:border-blue-700 transition-colors px-3 py-1"
+                    >
+                        {isDesktopPanelVisible ? "Hide Property Card" : "Show Property Card"}
+                    </button>
                 </div>
             )}
 
             {/* Map Section */}
             <section className="flex-1 relative overflow-hidden flex">
                 {/* Back to Blue Circles Button */}
-                {(selectedCounty || mapMarkers.length > 0) && (
+                {(!loading && (selectedCounty || mapMarkers.length > 0)) && (
                     <button
                         onClick={() => {
                             setSelectedCounty(null);
@@ -923,9 +930,9 @@ function ListingsMapContent() {
                             setPropertyType("");
                             setPropertySubtype("");
                             setCurrentPage(1);
-                            router.replace('/listings-map-view');
+                            router.push('/listings-map-view');
                         }}
-                        className="absolute top-4 lg:top-1 right-4 z-20 text-blue-600 border border-blue-600/30 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 active:scale-95 backdrop-blur-md bg-white/20 hover:bg-white/30 shadow-lg hover:shadow-xl"
+                        className="absolute top-4 right-4 lg:top-1 z-20 text-blue-600 border border-blue-600/30 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 active:scale-95 backdrop-blur-md bg-white/20 hover:bg-white/30 shadow-lg hover:shadow-xl"
                     >
                         ← Back to Blue Circles
                     </button>
@@ -982,90 +989,98 @@ function ListingsMapContent() {
                         </div>
 
                         {/* Properties Panel - Right Side */}
-                        <div className="hidden lg:flex lg:w-96 bg-white border-l flex-col overflow-hidden shadow-lg">
-                            {/* Panel Header */}
-                            <div className="flex-shrink-0 border-b px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50">
-                                <p className="text-sm font-semibold text-gray-900">
-                                    {mapMarkers.length} {mapMarkers.length === 1 ? "Property" : "Properties"}
-                                </p>
-                            </div>
-
-                            {/* Properties List */}
-                            <div className="flex-1 overflow-y-auto">
-                                <div className="p-3 space-y-3">
-                                    {mapMarkers.map((property) => (
-                                        <div
-                                            key={property.id}
-                                            onClick={() => findPropertyByListingKey(property.listingKey)}
-                                            className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400"
-                                        >
-                                            {/* Property Image */}
-                                            {property.images[0] && (
-                                                <div className="relative w-full h-32 bg-gray-100 overflow-hidden">
-                                                    <img
-                                                        src={property.images[0]}
-                                                        alt={property.title}
-                                                        className="w-full h-full object-cover hover:scale-105 transition-transform"
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {/* Property Info */}
-                                            <div className="p-3">
-                                                <h3 className="font-semibold text-sm text-gray-900 truncate">
-                                                    {property.title}
-                                                </h3>
-                                                <p className="text-xs text-gray-600 truncate mt-1">
-                                                    {property.address}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {property.city}
-                                                </p>
-
-                                                {/* Price */}
-                                                <p className="text-lg font-bold text-blue-600 mt-2">
-                                                    ${property.price.toLocaleString()}
-                                                </p>
-
-                                                {/* Specs */}
-                                                <div className="flex gap-2 mt-2 text-xs text-gray-600">
-                                                    {property.bedrooms !== null && (
-                                                        <span className="bg-gray-100 px-2 py-1 rounded">
-                                                            {property.bedrooms} bed
-                                                        </span>
-                                                    )}
-                                                    {property.bathrooms !== null && (
-                                                        <span className="bg-gray-100 px-2 py-1 rounded">
-                                                            {property.bathrooms} bath
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {isDesktopPanelVisible && (
+                            <div className="hidden lg:flex lg:w-96 bg-white border-l flex-col overflow-hidden shadow-lg">
+                                {/* Panel Header */}
+                                <div className="flex-shrink-0 border-b px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-between">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        {mapMarkers.length} {mapMarkers.length === 1 ? "Property" : "Properties"}
+                                    </p>
+                                    <button
+                                        onClick={() => setIsDesktopPanelVisible(false)}
+                                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                    >
+                                        <X size={18} className="text-gray-600" />
+                                    </button>
                                 </div>
 
-                                {/* Load More Button - Desktop */}
-                                {meta.currentPage < meta.totalPages && (
-                                    <div className="border-t p-3 bg-gray-50">
-                                        <button
-                                            onClick={handleLoadMore}
-                                            disabled={isLoadingMore}
-                                            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 font-medium text-sm flex items-center justify-center gap-2"
-                                        >
-                                            {isLoadingMore ? (
-                                                <>
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                    <span>Loading...</span>
-                                                </>
-                                            ) : (
-                                                <span>Load More Properties</span>
-                                            )}
-                                        </button>
+                                {/* Properties List */}
+                                <div className="flex-1 overflow-y-auto">
+                                    <div className="p-3 space-y-3">
+                                        {mapMarkers.map((property) => (
+                                            <div
+                                                key={property.id}
+                                                onClick={() => findPropertyByListingKey(property.listingKey)}
+                                                className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400"
+                                            >
+                                                {/* Property Image */}
+                                                {property.images[0] && (
+                                                    <div className="relative w-full h-32 bg-gray-100 overflow-hidden">
+                                                        <img
+                                                            src={property.images[0]}
+                                                            alt={property.title}
+                                                            className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {/* Property Info */}
+                                                <div className="p-3">
+                                                    <h3 className="font-semibold text-sm text-gray-900 truncate">
+                                                        {property.title}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-600 truncate mt-1">
+                                                        {property.address}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {property.city}
+                                                    </p>
+
+                                                    {/* Price */}
+                                                    <p className="text-lg font-bold text-blue-600 mt-2">
+                                                        ${property.price.toLocaleString()}
+                                                    </p>
+
+                                                    {/* Specs */}
+                                                    <div className="flex gap-2 mt-2 text-xs text-gray-600">
+                                                        {property.bedrooms !== null && (
+                                                            <span className="bg-gray-100 px-2 py-1 rounded">
+                                                                {property.bedrooms} bed
+                                                            </span>
+                                                        )}
+                                                        {property.bathrooms !== null && (
+                                                            <span className="bg-gray-100 px-2 py-1 rounded">
+                                                                {property.bathrooms} bath
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
+
+                                    {/* Load More Button - Desktop */}
+                                    {meta.currentPage < meta.totalPages && (
+                                        <div className="border-t p-3 bg-gray-50">
+                                            <button
+                                                onClick={handleLoadMore}
+                                                disabled={isLoadingMore}
+                                                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 font-medium text-sm flex items-center justify-center gap-2"
+                                            >
+                                                {isLoadingMore ? (
+                                                    <>
+                                                        <Loader2 size={16} className="animate-spin" />
+                                                        <span>Loading...</span>
+                                                    </>
+                                                ) : (
+                                                    <span>Load More Properties</span>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Mobile/Tablet Properties Panel - Bottom Sheet */}
                         {isBottomSheetVisible && (

@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGrid, Search, Loader2, MapPin, Home, Check, Menu, X, Map } from "lucide-react";
+import { Search, Loader2, MapPin, Home, Check, Menu, X, Map } from "lucide-react";
 import api from "@/lib/baseurl";
-import { get } from "http";
+
 import { sanitizeSearchInput } from "@/lib/sanitizeSearchInput";
 
 type ViewMode = "grid";

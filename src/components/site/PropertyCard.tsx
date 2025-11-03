@@ -6,6 +6,7 @@ import Image from "next/image";
 import api from "@/lib/baseurl";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 export interface Property {
   id: string;
@@ -29,6 +30,7 @@ export default function PropertyCard({ property }: { property: Property }) {
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
   const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
+  const router = useRouter();
 
   const fetchUserFavorites = async () => {
     setUserLoading(true);
@@ -58,7 +60,7 @@ export default function PropertyCard({ property }: { property: Property }) {
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
+    if (!token) router.push('/login');
     setLoading(true);
     try {
       if (token) {
@@ -164,9 +166,7 @@ export default function PropertyCard({ property }: { property: Property }) {
               />
             )}
           </>
-        )}
-        {
-          token && <button
+        )} <button
           onClick={handleFavorite}
           disabled={loading || userLoading}
           aria-label="favorite"
@@ -183,7 +183,7 @@ export default function PropertyCard({ property }: { property: Property }) {
             />
           )}
         </button>
-        }
+
         <div className="absolute left-3 bottom-3 rounded-md bg-black/60 px-2 py-1 text-xs text-white">
           <div className="flex items-center gap-1">
             <MapPin size={12} />
