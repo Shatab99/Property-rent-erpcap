@@ -1,9 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Upload } from "lucide-react"
 
 interface StepProps {
   formData: any
@@ -11,6 +10,16 @@ interface StepProps {
 }
 
 export default function ApplicantInfoStep({ formData, updateFormData }: StepProps) {
+
+  const email = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('email='))?.split('=')[1] || null : null;
+
+  // Set email in form data when component mounts
+  useEffect(() => {
+    if (email && !formData.email) {
+      updateFormData({ email })
+    }
+  }, [email, formData.email, updateFormData])
+
   const handleChange = (field: string, value: any) => {
     updateFormData({ [field]: value })
   }
@@ -19,7 +28,7 @@ export default function ApplicantInfoStep({ formData, updateFormData }: StepProp
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2 md:col-span-2 lg:col-span-3">
-          <Label htmlFor="fullName">Full Name</Label>
+          <Label htmlFor="fullName">Full Legal Name</Label>
           <Input
             id="fullName"
             placeholder="John Doe"
@@ -46,10 +55,11 @@ export default function ApplicantInfoStep({ formData, updateFormData }: StepProp
           <Input
             id="email"
             type="email"
-            placeholder="john.doe@example.com"
+            placeholder="your-email@example.com"
             required
             value={formData.email || ""}
-            onChange={(e) => handleChange("email", e.target.value)}
+            disabled
+            className="bg-gray-100 cursor-not-allowed"
           />
         </div>
       </div>

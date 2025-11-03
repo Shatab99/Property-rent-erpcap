@@ -3,6 +3,8 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import api from "@/lib/baseurl"
+import { useEffect, useState } from "react"
 
 interface StepProps {
   formData: any
@@ -10,9 +12,40 @@ interface StepProps {
 }
 
 export default function PropertyDetailsStep({ formData, updateFormData }: StepProps) {
+
+  const [propertyData, setPropertyData] = useState<any>(null);
+
+  const fetchPropertyData = async () => {
+    try {
+      const res = await api.get(`/properties/${formData.listingKey}`);
+      setPropertyData(res.data.data);
+    }
+    catch (error) {
+      console.error("Error fetching property data:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchPropertyData();
+  }, [])
+
+  // Auto-fill property details when data is fetched
+  useEffect(() => {
+    if (propertyData) {
+      updateFormData({
+        propertyAddress: propertyData.address || "",
+        unitNumber: "Admin will decide",
+        monthlyRent: propertyData.price || "",
+        securityDeposit: propertyData.securityDeposit || "",
+      })
+    }
+  }, [propertyData])
+
   const handleChange = (field: string, value: any) => {
     updateFormData({ [field]: value })
   }
+
+
 
   return (
     <div className="space-y-6">
@@ -23,7 +56,8 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
           placeholder="123 Main Street, Apt 4B"
           required
           value={formData.propertyAddress || ""}
-          onChange={(e) => handleChange("propertyAddress", e.target.value)}
+          disabled
+          className="bg-gray-100 cursor-not-allowed"
         />
       </div>
 
@@ -32,9 +66,10 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
           <Label htmlFor="unitNumber">Unit Number</Label>
           <Input
             id="unitNumber"
-            placeholder="4B"
+            placeholder="Admin will decide"
             value={formData.unitNumber || ""}
-            onChange={(e) => handleChange("unitNumber", e.target.value)}
+            disabled
+            className="bg-gray-100 cursor-not-allowed"
           />
         </div>
         <div className="space-y-2">
@@ -72,7 +107,8 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
             placeholder="$1,500"
             required
             value={formData.monthlyRent || ""}
-            onChange={(e) => handleChange("monthlyRent", e.target.value)}
+            disabled
+            className="bg-gray-100 cursor-not-allowed"
           />
         </div>
       </div>
@@ -84,7 +120,8 @@ export default function PropertyDetailsStep({ formData, updateFormData }: StepPr
           type="number"
           placeholder="$1,500"
           value={formData.securityDeposit || ""}
-          onChange={(e) => handleChange("securityDeposit", e.target.value)}
+          disabled
+          className="bg-gray-100 cursor-not-allowed"
         />
         <p className="text-xs text-muted-foreground">Auto-filled based on property data</p>
       </div>

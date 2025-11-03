@@ -19,7 +19,7 @@ import AuthorizationStep from "@/components/steps/authorization-step"
 import UploadsStep from "@/components/steps/uploads-step"
 import api from "@/lib/baseurl"
 import { toastError, toastSuccess } from "@/lib/toast"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
 
 const steps = [
@@ -36,16 +36,44 @@ const steps = [
   { id: 11, title: "Uploads", icon: "📎", component: UploadsStep },
 ]
 
+// Validation rules for each step - define required fields
+const requiredFieldsByStep: Record<number, string[]> = {
+  1: ["fullName", "dob", "email", "phone", "ssn"], // Applicant Info
+  2: ["propertyAddress", "moveInDate", "leaseTerm", "monthlyRent"], // Property Details
+  3: ["residentialHistoryAddresses"], // Residential History
+  4: ["currentEmployer", "jobTitle", "employmentStartDate", "annualIncome"], // Employment & Income
+  5: ["bankName", "accountType", "accountNumber"], // Financial Info
+  6: ["numberOfOccupants"], // Household Info
+  7: ["vehicleMake", "vehicleModel", "vehicleYear"], // Vehicle Info
+  8: ["backgroundCheckAgreement"], // Background Check
+  9: ["reference1Name", "reference1Phone"], // References
+  10: ["authorizationAgree"], // Authorization
+  11: [], // Uploads (optional)
+}
+
+// Function to validate if all required fields for current step are filled
+const isStepComplete = (stepId: number, formData: any): boolean => {
+  const requiredFields = requiredFieldsByStep[stepId] || []
+  return requiredFields.every(field => {
+    const value = formData[field]
+    // Check if field has a valid value (not empty, not null, not undefined)
+    if (Array.isArray(value)) {
+      return value.length > 0
+    }
+    return value && value !== ""
+  })
+}
+
 export default function RentalApplicationWizard() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isNext, setIsNext] = useState(true);
+  const [isStepValid, setIsStepValid] = useState(false);
   const router = useRouter()
+  const { id } = useParams() as { id: string };
   const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
-
 
   const progress = (currentStep / steps.length) * 100
   const CurrentStepComponent = steps[currentStep - 1].component
@@ -54,8 +82,18 @@ export default function RentalApplicationWizard() {
     if (!token) {
       toastError("Please log in to apply for a rental.");
       router.push("/login");
+    } else if (id) {
+      // Set listingKey in form data by default
+      setFormData(prev => ({ ...prev, listingKey: id }))
     }
-  }, [])
+  }, [token, id])
+
+
+  // Validate current step whenever formData changes
+  useEffect(() => {
+    const isValid = isStepComplete(currentStep, formData)
+    setIsStepValid(isValid)
+  }, [formData, currentStep])
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -67,12 +105,13 @@ export default function RentalApplicationWizard() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     }
-    setIsNext(true);
   }
 
   const updateFormData = (data: any) => {
     setFormData({ ...formData, ...data })
   }
+
+  console.log(formData)
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -163,7 +202,7 @@ export default function RentalApplicationWizard() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <CurrentStepComponent formData={formData} updateFormData={updateFormData} setIsNext={setIsNext} />
+            <CurrentStepComponent formData={formData} updateFormData={updateFormData} />
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-6 border-t">
@@ -172,7 +211,6 @@ export default function RentalApplicationWizard() {
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
                 className="gap-2 bg-transparent"
-
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -191,7 +229,7 @@ export default function RentalApplicationWizard() {
                   }
                 </Button>
               ) : (
-                <Button disabled={!isNext} onClick={handleNext} className="gap-2">
+                <Button disabled={!isStepValid} onClick={handleNext} className="gap-2">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
