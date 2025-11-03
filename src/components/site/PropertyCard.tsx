@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Heart, MapPin, BedSingle, Bath, Ruler } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import api from "@/lib/baseurl";
 import { toastError, toastSuccess } from "@/lib/toast";
@@ -31,6 +29,10 @@ export default function PropertyCard({ property }: { property: Property }) {
   const [userLoading, setUserLoading] = useState(true);
   const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
   const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(`/property/${property.listingKey}`);
+  };
 
   const fetchUserFavorites = async () => {
     setUserLoading(true);
@@ -110,7 +112,10 @@ export default function PropertyCard({ property }: { property: Property }) {
     setImageError((prev) => ({ ...prev, [index]: true }));
   };
   return (
-    <div className="group overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div 
+      onClick={handleCardClick}
+      className="group overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         {allImagesFailed ? (
           <img
@@ -215,11 +220,6 @@ export default function PropertyCard({ property }: { property: Property }) {
             <Ruler size={16} />
             {property.sqft.toLocaleString()} sqft
           </div>
-        </div>
-        <div className="mt-4">
-          <Button asChild className="w-full">
-            <Link href={`/property/${property.listingKey}`}>View details</Link>
-          </Button>
         </div>
       </div>
     </div>

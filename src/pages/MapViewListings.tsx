@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, MapPin, Check, Menu, X, Grid3x3, Map } from "lucide-react";
+import { Search, Loader2, MapPin, Check, Menu, X, Grid3x3, Map, Heart } from "lucide-react";
 import api from "@/lib/baseurl";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearchInput";
 
@@ -154,6 +154,11 @@ function ListingsMapContent() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadMoreInFlightRef = useRef(false);
 
+    // Favorites state
+    const [favorites, setFavorites] = useState<string[]>([]);
+    const [favoritesLoading, setFavoritesLoading] = useState(false);
+    const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null;
+
     const propertyTypeOptions = ["Residential", "Residential Lease", "Residential Income", "Commercial Sale", "Land"];
     const propertySubtypeOptions = ["Condominium", "Stock Cooperative", "Single Family Residence", "Duplex", "Apartment", "Multi Family", "Retail", "Business", "Warehouse", "Manufactured Home", "Mixed Use"];
 
@@ -262,6 +267,29 @@ function ListingsMapContent() {
 
         fetchCounties();
     }, []);
+
+    // Fetch user favorites on mount
+    useEffect(() => {
+        if (!token) return;
+
+        const fetchUserFavorites = async () => {
+            try {
+                setFavoritesLoading(true);
+                const res = await api.get('/users/me', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setFavorites(res.data.data.favorites || []);
+            } catch (error) {
+                console.error("Error fetching user favorites:", error);
+            } finally {
+                setFavoritesLoading(false);
+            }
+        };
+
+        fetchUserFavorites();
+    }, [token]);
 
     // Fetch properties from API and geocode them
     useEffect(() => {
@@ -381,6 +409,37 @@ function ListingsMapContent() {
 
     const findPropertyByListingKey = (listingKey: string) => {
         router.push(`/property/${listingKey}`);
+    };
+
+    const handleFavorite = async (e: React.MouseEvent, propertyId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        try {
+            if (favorites.includes(propertyId)) {
+                // Remove from favorites
+                await api.delete(`/users/favorite/${propertyId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setFavorites(favorites.filter(id => id !== propertyId));
+            } else {
+                // Add to favorites
+                await api.post(`/users/favorite/${propertyId}`, {}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setFavorites([...favorites, propertyId]);
+            }
+        } catch (error) {
+            console.error("Error updating favorite:", error);
+        }
     };
 
     const handleMapClick = (lat: number, lng: number) => {
@@ -572,13 +631,14 @@ function ListingsMapContent() {
                                                             Cities
                                                         </div>
                                                         {suggestions.city.map((item, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                onClick={() => handleSuggestionClick(`${item.city}, ${item.stateOrProvince}`)}
-                                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm transition-colors"
+                                                            <button
+                                                                key={`city-${idx}`}
+                                                                onClick={() => handleSuggestionClick(item.city)}
+                                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
                                                             >
-                                                                {item.city}, {item.stateOrProvince}
-                                                            </div>
+                                                                <div className="font-medium">{item.city}</div>
+                                                                <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
+                                                            </button>
                                                         ))}
                                                     </div>
                                                 )}
@@ -591,13 +651,14 @@ function ListingsMapContent() {
                                                             Counties
                                                         </div>
                                                         {suggestions.county.map((item, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                onClick={() => handleSuggestionClick(`${item.county}, ${item.stateOrProvince}`)}
-                                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm transition-colors"
+                                                            <button
+                                                                key={`county-${idx}`}
+                                                                onClick={() => handleSuggestionClick(item.county)}
+                                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
                                                             >
-                                                                {item.county}, {item.stateOrProvince}
-                                                            </div>
+                                                                <div className="font-medium">{item.county}</div>
+                                                                <div className="text-xs text-muted-foreground">{item.stateOrProvince}</div>
+                                                            </button>
                                                         ))}
                                                     </div>
                                                 )}
@@ -606,16 +667,17 @@ function ListingsMapContent() {
                                                 {suggestions.suggestedProperties && suggestions.suggestedProperties.length > 0 && (
                                                     <div>
                                                         <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
+                                                            <MapPin size={14} className="inline mr-2" />
                                                             Properties
                                                         </div>
                                                         {suggestions.suggestedProperties.map((item, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                onClick={() => handleSuggestionClick(item.title)}
-                                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm transition-colors"
+                                                            <button
+                                                                key={`property-${idx}`}
+                                                                onClick={() => findPropertyByListingKey(item.listingKey)}
+                                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b text-sm transition-colors"
                                                             >
-                                                                {item.title}
-                                                            </div>
+                                                                <div className="font-medium">{item.title}</div>
+                                                            </button>
                                                         ))}
                                                     </div>
                                                 )}
@@ -1011,7 +1073,7 @@ function ListingsMapContent() {
                                             <div
                                                 key={property.id}
                                                 onClick={() => findPropertyByListingKey(property.listingKey)}
-                                                className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400"
+                                                className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400 relative"
                                             >
                                                 {/* Property Image */}
                                                 {property.images[0] && (
@@ -1023,6 +1085,19 @@ function ListingsMapContent() {
                                                         />
                                                     </div>
                                                 )}
+
+                                                {/* Favorite Heart Button */}
+                                                <button
+                                                    onClick={(e) => handleFavorite(e, property.id)}
+                                                    className="absolute right-2 bottom-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 hover:scale-110"
+                                                >
+                                                    <Heart
+                                                        size={18}
+                                                        fill={favorites?.includes(property.id) ? "#ef4444" : "none"}
+                                                        color={favorites?.includes(property.id) ? "#ef4444" : "currentColor"}
+                                                        className="transition-all duration-300"
+                                                    />
+                                                </button>
 
                                                 {/* Property Info */}
                                                 <div className="p-3">
@@ -1119,7 +1194,7 @@ function ListingsMapContent() {
                                             <div
                                                 key={property.id}
                                                 onClick={() => findPropertyByListingKey(property.listingKey)}
-                                                className="flex-shrink-0 w-48 bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400"
+                                                className="flex-shrink-0 w-48 bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:border-blue-400 relative"
                                             >
                                                 {/* Property Image */}
                                                 {property.images[0] && (
@@ -1131,6 +1206,19 @@ function ListingsMapContent() {
                                                         />
                                                     </div>
                                                 )}
+
+                                                {/* Favorite Heart Button */}
+                                                <button
+                                                    onClick={(e) => handleFavorite(e, property.id)}
+                                                    className="absolute right-2 bottom-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 hover:scale-110"
+                                                >
+                                                    <Heart
+                                                        size={18}
+                                                        fill={favorites?.includes(property.id) ? "#ef4444" : "none"}
+                                                        color={favorites?.includes(property.id) ? "#ef4444" : "currentColor"}
+                                                        className="transition-all duration-300"
+                                                    />
+                                                </button>
 
                                                 {/* Property Info */}
                                                 <div className="p-3">
