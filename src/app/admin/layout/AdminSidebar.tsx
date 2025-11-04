@@ -11,6 +11,7 @@ import {
   UserPlus,
   UserCheck,
   MessageSquareCode,
+  BadgeDollarSign,
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,11 @@ const menuItems = [
     title: "Applications",
     url: "/admin/applications",
     icon: MessageSquareCode,
+  },
+  {
+    title: "Offers from Customers",
+    url: "/admin/offers",
+    icon: BadgeDollarSign,
   },
   {
     title: "Inquiries",

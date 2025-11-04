@@ -1,6 +1,6 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -35,17 +35,17 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
   const [loading, setLoading] = useState(true)
   const [btnLoading, setBtnLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
 
   const fetchApplication = async () => {
     try {
-      const res = await fetch(`/admin/property-application/${id}`, {
+      const res = await api.get(`/admin/property-application/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
       })
-      const data = await res.json()
-      if (data.success) {
-        setApplication(data.data)
+      if (res.data.success) {
+        setApplication(res.data.data)
       } else {
         setError("Failed to load application.")
       }
@@ -58,27 +58,8 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
 
   useEffect(() => {
     if (!id) return
-    // const fetchApplication = async () => {
-    //   try {
-    //     const res = await fetch(`${baseURL}/admin/property-application/${id}`, {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       }
-    //     })
-    //     const data = await res.json()
-    //     if (data.success) {
-    //       setApplication(data.data)
-    //     } else {
-    //       setError("Failed to load application.")
-    //     }
-    //   } catch (err) {
-    //     setError("Something went wrong while fetching data.")
-    //   } finally {
-    //     setLoading(false)
-    //   }
-    // }
     fetchApplication()
-  }, [id])
+  }, [id, token])
 
   if (loading)
     return (
@@ -91,6 +72,7 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
     status: application?.status || "PENDING",
     submittedDate: application?.appliedAt || "N/A",
     applicationId: application?.id,
+    listingKey: application?.listingKey || "",
 
     // Applicant Info
     applicantInfo: {
@@ -212,13 +194,14 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
         }
       });
       toastSuccess("Application approved successfully.")
+      // Refetch the application data
+      await fetchApplication()
     }
     catch {
       toastError("Failed to approve application.")
     }
     finally {
       setBtnLoading(false)
-      fetchApplication()
     }
   }
 
@@ -235,13 +218,14 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
         }
       });
       toastSuccess("Application rejected successfully.")
+      // Refetch the application data
+      await fetchApplication()
     }
     catch {
       toastError("Failed to reject application.")
     }
     finally {
       setBtnLoading(false)
-      fetchApplication()
     }
   }
 
@@ -268,7 +252,12 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
                 Application ID: <span className="font-mono text-foreground">{applicationData.applicationId}</span>
               </p>
             </div>
-            {getStatusBadge(applicationData.status)}
+            <div className="flex flex-col items-end gap-8">
+              {getStatusBadge(applicationData.status)}
+              <Button onClick={() => router.push(`/admin/property-details/${applicationData.listingKey}`)} variant={"outline"} className="text-primary">
+                View Property Details
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -767,56 +756,76 @@ export default function ReviewApplication({ id, token }: { id: string, token: st
                 <TableRow>
                   <TableCell className="font-medium w-1/3">ID Document</TableCell>
                   <TableCell>
-                    <Link href={applicationData.uploads.idDocument || '/placeholder-image.png'}
-                    >
-                      <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.idDocument}
-                      </Button>
-                    </Link>
+                    {applicationData.uploads.idDocument ? (
+                      <a href={applicationData.uploads.idDocument} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          View Document
+                        </Button>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Proof of Income</TableCell>
                   <TableCell>
-                    <Link href={applicationData.uploads.proofOfIncome || '/placeholder-image.png'}
-                    >
-                      <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.proofOfIncome}
-                      </Button>
-                    </Link>
+                    {applicationData.uploads.proofOfIncome ? (
+                      <a href={applicationData.uploads.proofOfIncome} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          View Document
+                        </Button>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Bank Statements</TableCell>
                   <TableCell>
-                    <Link href={applicationData.uploads.bankStatements || '/placeholder-image.png'}
-                    >
-                      <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.bankStatements}
-                      </Button>
-                    </Link>
+                    {applicationData.uploads.bankStatements ? (
+                      <a href={applicationData.uploads.bankStatements} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          View Document
+                        </Button>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Proof of Giving Rent</TableCell>
                   <TableCell>
-                    <Link href={applicationData.uploads.rentalImage || '/placeholder-image.png'}
-                    >
-                      <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.rentalImage || "N/A"}
-                      </Button>
-                    </Link>
+                    {applicationData.uploads.rentalImage ? (
+                      <a href={applicationData.uploads.rentalImage} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          View Document
+                        </Button>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Pet Record Statement</TableCell>
                   <TableCell>
-                    <Link href={applicationData.uploads.petRecords || '/placeholder-image.png'}
-                    >
-                      <Button variant="link" className="h-auto p-0 text-primary">
-                        {applicationData.uploads.petRecords || "N/A"}
-                      </Button>
-                    </Link>
+                    {applicationData.uploads.petRecords ? (
+                      <a href={applicationData.uploads.petRecords} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          View Document
+                        </Button>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                 </TableRow>
               </TableBody>

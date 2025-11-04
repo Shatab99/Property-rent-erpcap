@@ -40,14 +40,14 @@ const steps = [
 const requiredFieldsByStep: Record<number, string[]> = {
   1: ["fullName", "dob", "email", "phone", "ssn"], // Applicant Info
   2: ["propertyAddress", "moveInDate", "leaseTerm", "monthlyRent"], // Property Details
-  3: ["residentialHistoryAddresses"], // Residential History
-  4: ["currentEmployer", "jobTitle", "employmentStartDate", "annualIncome"], // Employment & Income
-  5: ["bankName", "accountType", "accountNumber"], // Financial Info
-  6: ["numberOfOccupants"], // Household Info
+  3: ["currentAddress", "lengthOfStay", "monthlyRentPaid", "reasonForLeaving", "landlordName", "landlordContact"], // Residential History
+  4: ["jobTitle", "lengthEmployment", "monthlyIncome"], // Employment & Income
+  5: ["bankName", "accountType"], // Financial Info
+  6: ["numOccupants"], // Household Info
   7: ["vehicleMake", "vehicleModel", "vehicleYear"], // Vehicle Info
-  8: ["backgroundCheckAgreement"], // Background Check
-  9: ["reference1Name", "reference1Phone"], // References
-  10: ["authorizationAgree"], // Authorization
+  8: ["evicted", "brokenLease", "conviction"], // Background Check (has defaults)
+  9: ["referenceName", "relationshipWithReference", "referenceContact"], // References
+  10: ["certifyTrue"], // Authorization
   11: [], // Uploads (optional)
 }
 
@@ -112,7 +112,7 @@ export default function RentalApplicationWizard() {
     setFormData({ ...formData, ...data })
   }
 
-  console.log(formData)
+  // console.log(formData)
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -121,7 +121,7 @@ export default function RentalApplicationWizard() {
 
     try {
       const form = new FormData();
-      const bodyData: Record<string, any> = {}; // ✅ define this
+      const bodyData: Record<string, any> = {};
 
       // List of file fields
       const fileFields = [
@@ -132,26 +132,34 @@ export default function RentalApplicationWizard() {
         "petRecordImageUrl",
       ];
 
-      // Separate JSON and file fields
+      // Separate JSON and file fields directly from formData state
       Object.entries(formData).forEach(([key, value]) => {
         if (fileFields.includes(key)) {
+          // Handle file fields
           if (value instanceof File) {
             form.append(key, value, value.name);
           } else {
             console.warn(`Skipping ${key}: not a File instance`, value);
           }
         } else {
+          // Handle regular fields - add to bodyData
           bodyData[key] = value;
         }
       });
 
-      // ✅ Append JSON string for non-file data
+      // Append JSON data as stringified body
       form.append("bodyData", JSON.stringify(bodyData));
 
-      // ✅ Submit via axios
+      console.log("✅ Form Data:", {
+        bodyData,
+        files: Array.from(form.keys()),
+      });
+
+      // Submit via axios
       const response = await api.put("/booking/apply-for-rent", form, {
         headers: {
           "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`,
         },
       });
 
@@ -160,7 +168,8 @@ export default function RentalApplicationWizard() {
       toastSuccess("✅ Your application has been submitted successfully!");
       router.push("/")
     } catch (err: any) {
-      toastError("❌ Error submitting, please fullly fill the form and try again.");
+      toastError("❌ Error submitting, please fully fill the form and try again.");
+      console.log(err)
       setError(err?.response?.data?.message || err?.message || "Submission failed");
     } finally {
       setLoading(false);

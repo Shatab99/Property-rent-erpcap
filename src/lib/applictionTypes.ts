@@ -2,6 +2,7 @@ export interface PropertyApplication {
     id: string
     userId?: string | null
     propertyId?: string | null
+    listingKey: string
     fullName: string
     email: string
     phone: string

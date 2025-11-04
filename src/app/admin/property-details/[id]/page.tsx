@@ -1,4 +1,4 @@
-import OfferFormWizard from '@/pages/OfferFormWizard';
+import PropertyDetailsAdmin from '@/pages/admin/PropertyDetailsAdmin';
 import React from 'react'
 
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
@@ -7,7 +7,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     return (
         <div>
-            <OfferFormWizard id={id} />
+            <PropertyDetailsAdmin id={id} />
         </div>
     )
 }

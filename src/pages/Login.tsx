@@ -39,6 +39,7 @@ export default function Login() {
       document.cookie = `email=${email}; path=/`;
       document.cookie = `name=${res.data.data.name}; path=/`;
       document.cookie = `role=${res.data.data.role}; path=/`;
+
       form.reset();
       router.push(res.data.data.role === "ADMIN" ? "/admin" : next || "/");
     }

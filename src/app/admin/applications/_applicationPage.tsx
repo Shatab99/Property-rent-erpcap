@@ -52,19 +52,17 @@ interface Props {
   token: string
 }
 
-export default function PropertyApplicationsPage({
-  initialData,
-  initialFilters,
-  token,
-}: Props) {
-  const [applications, setApplications] = useState<Application[]>(initialData?.result)
-  const [meta, setMeta] = useState<Meta>(initialData?.meta)
+export default function PropertyApplicationsPage() {
+  const [applications, setApplications] = useState<Application[]>([])
+  const [meta, setMeta] = useState<Meta>({ currentPage: 1, totalPages: 1, totalItems: 0 })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [search, setSearch] = useState(initialFilters.search)
-  const [status, setStatus] = useState(initialFilters.status)
-  const [page, setPage] = useState(initialFilters.page)
-  const limit = initialFilters.limit
+  const [search, setSearch] = useState("")
+  const [status, setStatus] = useState("ALL")
+  const [page, setPage] = useState(1)
+  const limit = 10
+
+  const token = typeof window !== "undefined" ? document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || null : null
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -94,14 +92,17 @@ export default function PropertyApplicationsPage({
         ...(status !== "ALL" && { status }),
       })
 
-      const data = await api.get(`/admin/property-application?${query && query.toString()}`, {
+      const response = await api.get(`/admin/property-application?${query.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
       })
 
-      setApplications(data.data.result)
-      setMeta(data.data.meta)
+      // Access the correct nested structure from the response
+      const { meta, result } = response.data.data
+
+      setApplications(result || [])
+      setMeta(meta || { currentPage: 1, totalPages: 1, totalItems: 0 })
 
       // Update URL (for SSR hydration)
       router.replace(`?${query.toString()}`)
@@ -111,6 +112,8 @@ export default function PropertyApplicationsPage({
       setLoading(false)
     }
   }
+
+  console.log(applications)
 
   useEffect(() => {
     fetchApplications()
