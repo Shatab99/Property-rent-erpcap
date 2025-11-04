@@ -1113,7 +1113,7 @@ function ListingsMapContent() {
 
                                                     {/* Price */}
                                                     <p className="text-lg font-bold text-blue-600 mt-2">
-                                                        ${property.price.toLocaleString()}
+                                                        ${property.price?.toLocaleString()}
                                                     </p>
 
                                                     {/* Specs */}
@@ -1231,7 +1231,7 @@ function ListingsMapContent() {
 
                                                     {/* Price */}
                                                     <p className="text-base font-bold text-blue-600 mt-2">
-                                                        ${property.price.toLocaleString()}
+                                                        ${property.price?.toLocaleString()}
                                                     </p>
 
                                                     {/* Specs */}

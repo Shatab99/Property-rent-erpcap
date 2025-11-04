@@ -265,7 +265,7 @@ export default function PropertyMap({
                 <p className="text-xs text-gray-600">{marker.city}</p>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm font-bold text-blue-600">
-                    ${marker.price.toLocaleString()}
+                    ${marker.price?.toLocaleString()}
                   </span>
                   <div className="text-xs text-gray-600 space-x-2">
                     {marker.bedrooms !== null && (
