@@ -15,12 +15,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (role === "AGENT") {
+    if (!pathname.startsWith("/agent")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/agent";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+  
+  if (role === "LANDLORD") {
+    if (!pathname.startsWith("/landlord")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/landlord";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+
   // Normal user → block /admin/**
   if (pathname.startsWith("/admin")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
+
+
 
   // If user hit application/** without token, redirect to login with callback
   if (pathname.startsWith("/application") && !token) {

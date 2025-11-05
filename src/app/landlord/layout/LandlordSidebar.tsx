@@ -5,14 +5,8 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Building2,
-  Users,
   MessageSquare,
   Settings,
-  UserPlus,
-  UserCheck,
-  MessageSquareCode,
-  BadgeDollarSign,
-  UserStar,
 } from "lucide-react";
 import {
   Sidebar,
@@ -23,7 +17,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import logo from "../../../../public/logo.png";
@@ -31,62 +24,32 @@ import logo from "../../../../public/logo.png";
 const menuItems = [
   {
     title: "Overview",
-    url: "/admin",
+    url: "/landlord",
     icon: BarChart3,
   },
   {
-    title: "Listing History",
-    url: "/admin/listings",
+    title: "Listings",
+    url: "/landlord/listings",
     icon: Building2,
   },
   {
-    title: "Users",
-    url: "/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Agent List",
-    url: "/admin/agents",
-    icon: UserCheck,
-  },
-  {
-    title: "Landlord List",
-    url: "/admin/landlords",
-    icon: UserStar ,
-  },
-  {
-    title: "Applications",
-    url: "/admin/applications",
-    icon: MessageSquareCode,
-  },
-  {
-    title: "Offers from Customers",
-    url: "/admin/offers",
-    icon: BadgeDollarSign,
-  },
-  {
     title: "Inquiries",
-    url: "/admin/inquiries",
+    url: "/landlord/inquiries",
     icon: MessageSquare,
   },
   {
     title: "Settings",
-    url: "/admin/settings",
+    url: "/landlord/settings",
     icon: Settings,
   },
-  {
-    title: "Add Agent",
-    url: "/admin/add-agent",
-    icon: UserPlus,
-  }
 ];
 
-export default function AdminSidebar() {
+export default function LandlordSidebar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    if (path === "/admin") {
-      return pathname === "/admin";
+    if (path === "/landlord") {
+      return pathname === "/landlord";
     }
     return pathname?.startsWith(path);
   };
@@ -108,9 +71,9 @@ export default function AdminSidebar() {
               className="rounded-md"
             />
             <div>
-              <h2 className="font-bold text-lg text-primary">PropAdmin</h2>
+              <h2 className="font-bold text-lg text-primary">PropLord</h2>
               <p className="text-xs text-sidebar-foreground/70">
-                Property Management
+                Landlord Portal
               </p>
             </div>
           </div>

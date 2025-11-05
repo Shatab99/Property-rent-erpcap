@@ -223,7 +223,7 @@ function SignupAsLandLordContent() {
 
                         window.dispatchEvent(new Event("auth-change"));
                         toastSuccess("Your account has been created successfully! Please wait for the admin approval.", { position: "top-center" });
-                        formElement.reset();
+                        // formElement.reset();
                         router.push(`/login`);
                     } catch (error: any) {
                         toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });

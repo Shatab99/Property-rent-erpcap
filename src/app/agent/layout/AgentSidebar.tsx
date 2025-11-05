@@ -5,14 +5,9 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Building2,
-  Users,
   MessageSquare,
   Settings,
-  UserPlus,
-  UserCheck,
-  MessageSquareCode,
-  BadgeDollarSign,
-  UserStar,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -23,7 +18,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import logo from "../../../../public/logo.png";
@@ -31,62 +25,37 @@ import logo from "../../../../public/logo.png";
 const menuItems = [
   {
     title: "Overview",
-    url: "/admin",
+    url: "/agent",
     icon: BarChart3,
   },
   {
-    title: "Listing History",
-    url: "/admin/listings",
+    title: "Listings",
+    url: "/agent/listings",
     icon: Building2,
   },
   {
-    title: "Users",
-    url: "/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Agent List",
-    url: "/admin/agents",
-    icon: UserCheck,
-  },
-  {
-    title: "Landlord List",
-    url: "/admin/landlords",
-    icon: UserStar ,
-  },
-  {
-    title: "Applications",
-    url: "/admin/applications",
-    icon: MessageSquareCode,
-  },
-  {
-    title: "Offers from Customers",
-    url: "/admin/offers",
-    icon: BadgeDollarSign,
+    title: "Subscription Plans",
+    url: "/agent/subscription-plans",
+    icon: CreditCard,
   },
   {
     title: "Inquiries",
-    url: "/admin/inquiries",
+    url: "/agent/inquiries",
     icon: MessageSquare,
   },
   {
     title: "Settings",
-    url: "/admin/settings",
+    url: "/agent/settings",
     icon: Settings,
   },
-  {
-    title: "Add Agent",
-    url: "/admin/add-agent",
-    icon: UserPlus,
-  }
 ];
 
-export default function AdminSidebar() {
+export default function AgentSidebar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    if (path === "/admin") {
-      return pathname === "/admin";
+    if (path === "/agent") {
+      return pathname === "/agent";
     }
     return pathname?.startsWith(path);
   };
@@ -108,9 +77,9 @@ export default function AdminSidebar() {
               className="rounded-md"
             />
             <div>
-              <h2 className="font-bold text-lg text-primary">PropAdmin</h2>
+              <h2 className="font-bold text-lg text-primary">PropAgent</h2>
               <p className="text-xs text-sidebar-foreground/70">
-                Property Management
+                Agent Portal
               </p>
             </div>
           </div>
