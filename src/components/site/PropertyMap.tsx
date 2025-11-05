@@ -17,6 +17,7 @@ interface PropertyMapProps {
     bedrooms: number | null;
     bathrooms: number | null;
     images: string[];
+    originalPrice?: number;
     coordinates: [number, number];
   }>;
   center: [number, number];
@@ -53,11 +54,11 @@ const createPropertyMarker = () => {
 };
 
 // Component to handle map updates when center changes
-function MapUpdater({ 
-  center, 
+function MapUpdater({
+  center,
   isCountySelected,
-  previousCountySelected 
-}: { 
+  previousCountySelected
+}: {
   center: [number, number];
   isCountySelected: boolean;
   previousCountySelected: React.MutableRefObject<boolean>;
@@ -92,13 +93,13 @@ function MapUpdater({
 }
 
 // Component to manage dynamic zoom constraints
-function ZoomController({ 
+function ZoomController({
   isCountySelected,
   minZoom: initialMinZoom = 5,
   maxZoom: initialMaxZoom = 10,
   countyMinZoom = 10,
   countyMaxZoom = 18,
-}: { 
+}: {
   isCountySelected: boolean;
   minZoom?: number;
   maxZoom?: number;
@@ -170,14 +171,14 @@ export default function PropertyMap({
   }
 
   // Determine the actual center to use for the map
-  const mapCenter = isCountySelected && selectedCountyCoordinates 
-    ? selectedCountyCoordinates 
+  const mapCenter = isCountySelected && selectedCountyCoordinates
+    ? selectedCountyCoordinates
     : center;
 
   return (
-    <MapContainer 
-      center={mapCenter} 
-      zoom={isCountySelected ? 13 : 7} 
+    <MapContainer
+      center={mapCenter}
+      zoom={isCountySelected ? 13 : 7}
       minZoom={5}
       maxZoom={10}
       className="w-full h-screen px-3 py-3 sm:p-0 sm:mx-auto sm:container sm:h-full z-0"
@@ -186,12 +187,12 @@ export default function PropertyMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <MapUpdater 
-        center={mapCenter} 
+      <MapUpdater
+        center={mapCenter}
         isCountySelected={isCountySelected}
         previousCountySelected={previousCountySelectedRef}
       />
-      <ZoomController 
+      <ZoomController
         isCountySelected={isCountySelected}
         minZoom={5}
         maxZoom={10}
@@ -265,7 +266,7 @@ export default function PropertyMap({
                 <p className="text-xs text-gray-600">{marker.city}</p>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm font-bold text-blue-600">
-                    ${marker.price?.toLocaleString()}
+                    ${marker.price ? marker.price?.toLocaleString() : marker.originalPrice?.toLocaleString()}
                   </span>
                   <div className="text-xs text-gray-600 space-x-2">
                     {marker.bedrooms !== null && (

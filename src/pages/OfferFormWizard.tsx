@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -153,7 +152,7 @@ export default function OfferFormWizard({ id }: { id: string }) {
             setSuccess("Application submitted successfully!");
             console.log("✅ Server Response:", response.data);
             toastSuccess("✅ Your application has been submitted successfully!");
-            router.push("/")
+            router.push("/listings")
         } catch (err: any) {
             toastError("❌ Error submitting, please fully fill the form and try again.");
             console.log(err)

@@ -101,6 +101,18 @@ export default function OfferDetails({ id }: { id: string }) {
         }
     }
 
+    const getDownPaymentColor = (downPayment: number) => {
+        if (downPayment <= 20) return 'text-green-600'
+        if (downPayment <= 40) return 'text-orange-600'
+        return 'text-red-600'
+    }
+
+    const getDownPaymentBgColor = (downPayment: number) => {
+        if (downPayment <= 20) return 'bg-green-50 border-green-200'
+        if (downPayment <= 40) return 'bg-orange-50 border-orange-200'
+        return 'bg-red-50 border-red-200'
+    }
+
     const handleApproveOffer = async () => {
         setActionLoading(true)
         try {
@@ -317,15 +329,17 @@ export default function OfferDetails({ id }: { id: string }) {
                                 <p className="text-sm font-medium text-muted-foreground mb-1">Offer Amount</p>
                                 <p className="text-2xl font-bold text-primary">${offer.offerAmount.toLocaleString()}</p>
                             </div>
-                            <div className="bg-accent/5 p-4 rounded-lg border">
-                                <p className="text-sm font-medium text-muted-foreground mb-1">Down Payment</p>
-                                <p className="text-2xl font-bold text-slate-500">{offer.downPayment}%</p>
+                            <div className={`p-4 rounded-lg border ${getDownPaymentBgColor(offer.downPayment)}`}>
+                                <p className={`text-sm font-medium mb-1 ${getDownPaymentColor(offer.downPayment)}`}>Down Payment</p>
+                                <p className={`text-2xl font-bold ${getDownPaymentColor(offer.downPayment)}`}>{offer.downPayment.toFixed(2)}%</p>
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground mb-1">Deposit Amount</p>
                                 <p className="text-foreground font-semibold text-lg">${offer.depositAmount.toLocaleString()}</p>
                             </div>
-                            {/* <div>
+                            {/* if the ai integrated then this field will be available */}
+                            {/* 
+                            <div>
                                 <p className="text-sm font-medium text-muted-foreground mb-1">KYC Verification</p>
                                 <div className="flex items-center gap-2">
                                     <div className={`h-3 w-3 rounded-full ${offer.isKycVerified ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -375,22 +389,33 @@ export default function OfferDetails({ id }: { id: string }) {
                                 { label: 'Bank Letter', url: offer.bankLetterUrl },
                                 { label: 'Proof of Income', url: offer.proofOfIncomeUrl },
                                 { label: 'Additional Document', url: offer.additionalDocument },
-                            ].map((doc, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg border">
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <p className="font-medium text-foreground">{doc.label}</p>
+                            ]
+                                .filter(doc => doc.url) // Filter out documents without URLs
+                                .map((doc, index) => (
+                                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg border">
+                                        <div className="flex items-center gap-3">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                            <p className="font-medium text-foreground">{doc.label}</p>
+                                        </div>
+                                        <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-primary hover:underline font-medium text-sm"
+                                        >
+                                            View
+                                        </a>
                                     </div>
-                                    <a
-                                        href={doc.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline font-medium text-sm"
-                                    >
-                                        View
-                                    </a>
-                                </div>
-                            ))}
+                                ))}
+                            {[
+                                { label: 'Verified ID', url: offer.verifiedId },
+                                { label: 'Proof of Funds', url: offer.proofOfFunds },
+                                { label: 'Bank Letter', url: offer.bankLetterUrl },
+                                { label: 'Proof of Income', url: offer.proofOfIncomeUrl },
+                                { label: 'Additional Document', url: offer.additionalDocument },
+                            ].every(doc => !doc.url) && (
+                                    <p className="text-muted-foreground text-center py-4">No documents uploaded</p>
+                                )}
                         </div>
                     </CardContent>
                 </Card>
@@ -476,7 +501,7 @@ export default function OfferDetails({ id }: { id: string }) {
                                     <p className="text-sm font-medium text-blue-900">{new Date(offer.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                     <p className="text-xs text-blue-700 mt-1">{new Date(offer.createdAt).toLocaleTimeString()}</p>
                                 </div>
-                                
+
                                 <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200 rounded-lg p-4">
                                     <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2">Signed By</p>
                                     <p className="text-sm font-medium text-purple-900">{offer.fullName}</p>

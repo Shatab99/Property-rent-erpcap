@@ -166,7 +166,7 @@ export default function RentalApplicationWizard() {
       setSuccess("Application submitted successfully!");
       console.log("✅ Server Response:", response.data);
       toastSuccess("✅ Your application has been submitted successfully!");
-      router.push("/")
+      router.push("/listings")
     } catch (err: any) {
       toastError("❌ Error submitting, please fully fill the form and try again.");
       console.log(err)
