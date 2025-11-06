@@ -35,11 +35,6 @@ const menuItems = [
     icon: BarChart3,
   },
   {
-    title: "Listing History",
-    url: "/admin/listings",
-    icon: Building2,
-  },
-  {
     title: "Users",
     url: "/admin/users",
     icon: Users,

@@ -185,7 +185,11 @@ export default function PropertyMap({
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        // // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        // // url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+        // url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        url="https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=iXB4VrG9xlctp2zQ0Xwq"
+        // url="https://tile.jawg.io/jawg-streets/{z}/{x}/{y}{r}.png?access-token=EjpPKOwAMfcDv9DjN3wQ12opX1GhwT96z8SydqgdE6hrfQJ51hPMxicowSCf6Vj5"
       />
       <MapUpdater
         center={mapCenter}

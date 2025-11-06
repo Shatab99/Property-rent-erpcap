@@ -1,5 +1,11 @@
-import AgentListings from "@/pages/agent/AgentListings";
 
-export default function AgentListingsPage() {
-  return <AgentListings />;
+import Listings from '@/pages/agent/Listings'
+import React from 'react'
+
+export default function page() {
+  return (
+    <div>
+      <Listings />
+    </div>
+  )
 }
