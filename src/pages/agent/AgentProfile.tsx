@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { X, Plus, Loader2 } from 'lucide-react'
 import api from '@/lib/baseurl'
 import { toastError, toastSuccess } from '@/lib/toast'
-import { token } from '@/lib/sanitizeSearchInput'
+import { getToken } from '@/lib/getToken'
 
 interface AgentProfileData {
   officeName: string
@@ -48,13 +48,21 @@ export default function AgentProfile() {
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
-  // Preload agent profile data on component mount
+  // Preload agent profile data on component mount and when token changes
   useEffect(() => {
     const fetchAgentProfile = async () => {
       try {
+        const currentToken = getToken()
+        if (!currentToken) {
+          setIsPageLoading(false)
+          toastError('No authentication token found')
+          return
+        }
+
+        setIsPageLoading(true)
         const response = await api.get('/agent/my-agent-profile', {
           headers: {
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${currentToken}`
           }
         })
 
@@ -84,11 +92,7 @@ export default function AgentProfile() {
       }
     }
 
-    if (token) {
-      fetchAgentProfile()
-    } else {
-      setIsPageLoading(false)
-    }
+    fetchAgentProfile()
   }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -140,6 +144,13 @@ export default function AgentProfile() {
     setErrorMessage('')
 
     try {
+      const currentToken = getToken()
+      if (!currentToken) {
+        setErrorMessage('Authentication token not found. Please log in again.')
+        setIsLoading(false)
+        return
+      }
+
       // Validate required fields
       if (!formData.officeName.trim() || !formData.officeAddress.trim() || !formData.officePhone.trim() || !formData.licenseNumber.trim() || !formData.aboutAgent.trim()) {
         setErrorMessage('Please fill in all required fields')
@@ -166,7 +177,7 @@ export default function AgentProfile() {
 
       const response = await api.put('/agent/update-agent-profile', payload, {
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${currentToken}`
         }
       })
 
@@ -179,7 +190,6 @@ export default function AgentProfile() {
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'An error occurred')
       toastError(error instanceof Error ? error.message : 'An error occurred')
-      console.log(error)
       console.log(error)
     } finally {
       setIsLoading(false)

@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PropertyCard from "@/components/site/PropertyCard";
-import PropertyRow from "@/components/site/PropertyRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

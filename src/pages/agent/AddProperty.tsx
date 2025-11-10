@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { X, Plus, Loader2, Upload } from 'lucide-react'
 import api from '@/lib/baseurl'
 import { toastError, toastSuccess } from '@/lib/toast'
-import { token, sanitizeSearchInput } from '@/lib/sanitizeSearchInput'
+import { sanitizeSearchInput } from '@/lib/sanitizeSearchInput'
+import { useRouter } from 'next/navigation'
+import { getToken } from '@/lib/getToken'
 
 interface PropertyData {
     // Basic Info
@@ -78,6 +80,9 @@ interface PropertyData {
     listOfficePhone?: string
 }
 
+const propertyTypeOptions = ["Residential", "Residential Lease", "Residential Income", "Commercial Sale", "Land"];
+const propertySubtypeOptions = ["Condominium", "Stock Cooperative", "Single Family Residence", "Duplex", "Apartment", "Multi Family", "Retail", "Business", "Warehouse", "Manufactured Home", "Mixed Use"];
+
 export default function AddProperty() {
     const [formData, setFormData] = useState<PropertyData>({
         title: '',
@@ -131,20 +136,23 @@ export default function AddProperty() {
     console.log(formData)
 
     const [newFeature, setNewFeature] = useState<{ [key: string]: string }>({
-        amenity: '',
-        appliance: '',
+        amenities: '',
+        appliances: '',
         heating: '',
         cooling: '',
         parking: '',
-        interior: '',
-        exterior: '',
-        community: '',
+        interiorFeatures: '',
+        exteriorFeatures: '',
+        communityFeatures: '',
     })
+
+    const token = getToken()
 
     const [isLoading, setIsLoading] = useState(false)
     const [isLoadingProfile, setIsLoadingProfile] = useState(true)
     const [successMessage, setSuccessMessage] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const router = useRouter()
 
     // Fetch agent profile data on component mount
     useEffect(() => {
@@ -170,7 +178,8 @@ export default function AddProperty() {
                 }
             } catch (error) {
                 console.error('Failed to fetch agent profile:', error)
-                toastError('Failed to load agent profile data')
+                toastError('Please update your agent profile before adding a property.')
+                router.push('/agent/profile')
             } finally {
                 setIsLoadingProfile(false)
             }
@@ -205,27 +214,162 @@ export default function AddProperty() {
         })
     }
 
-    const addFeature = (featureType: string) => {
-        const key = featureType
-        const value = newFeature[key]?.trim()
+    const addAmenity = () => {
+        if (newFeature.amenities?.trim() && !formData.amenities.includes(newFeature.amenities.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                amenities: [...prev.amenities, newFeature.amenities.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, amenities: '' }))
+        }
+    }
 
-        if (!value) return
-
+    const removeAmenity = (amenity: string) => {
         setFormData(prev => ({
             ...prev,
-            [featureType]: [...(prev[featureType as keyof PropertyData] as string[]), value]
-        }))
-
-        setNewFeature(prev => ({
-            ...prev,
-            [key]: ''
+            amenities: prev.amenities.filter(a => a !== amenity)
         }))
     }
 
-    const removeFeature = (featureType: string, feature: string) => {
+    const addAppliance = () => {
+        if (newFeature.appliances?.trim() && !formData.appliances.includes(newFeature.appliances.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                appliances: [...prev.appliances, newFeature.appliances.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, appliances: '' }))
+        }
+    }
+
+    const removeAppliance = (appliance: string) => {
         setFormData(prev => ({
             ...prev,
-            [featureType]: (prev[featureType as keyof PropertyData] as string[]).filter(f => f !== feature)
+            appliances: prev.appliances.filter(a => a !== appliance)
+        }))
+    }
+
+    const addHeating = () => {
+        if (newFeature.heating?.trim() && !formData.heating.includes(newFeature.heating.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                heating: [...prev.heating, newFeature.heating.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, heating: '' }))
+        }
+    }
+
+    const removeHeating = (heating: string) => {
+        setFormData(prev => ({
+            ...prev,
+            heating: prev.heating.filter(h => h !== heating)
+        }))
+    }
+
+    const addCooling = () => {
+        if (newFeature.cooling?.trim() && !formData.cooling.includes(newFeature.cooling.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                cooling: [...prev.cooling, newFeature.cooling.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, cooling: '' }))
+        }
+    }
+
+    const removeCooling = (cooling: string) => {
+        setFormData(prev => ({
+            ...prev,
+            cooling: prev.cooling.filter(c => c !== cooling)
+        }))
+    }
+
+    const addParking = () => {
+        if (newFeature.parking?.trim() && !formData.parking.includes(newFeature.parking.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                parking: [...prev.parking, newFeature.parking.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, parking: '' }))
+        }
+    }
+
+    const removeParking = (parking: string) => {
+        setFormData(prev => ({
+            ...prev,
+            parking: prev.parking.filter(p => p !== parking)
+        }))
+    }
+
+    const addInteriorFeature = () => {
+        if (newFeature.interiorFeatures?.trim() && !formData.interiorFeatures.includes(newFeature.interiorFeatures.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                interiorFeatures: [...prev.interiorFeatures, newFeature.interiorFeatures.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, interiorFeatures: '' }))
+        }
+    }
+
+    const removeInteriorFeature = (feature: string) => {
+        setFormData(prev => ({
+            ...prev,
+            interiorFeatures: prev.interiorFeatures.filter(f => f !== feature)
+        }))
+    }
+
+    const addExteriorFeature = () => {
+        if (newFeature.exteriorFeatures?.trim() && !formData.exteriorFeatures.includes(newFeature.exteriorFeatures.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                exteriorFeatures: [...prev.exteriorFeatures, newFeature.exteriorFeatures.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, exteriorFeatures: '' }))
+        }
+    }
+
+    const removeExteriorFeature = (feature: string) => {
+        setFormData(prev => ({
+            ...prev,
+            exteriorFeatures: prev.exteriorFeatures.filter(f => f !== feature)
+        }))
+    }
+
+    const addCommunityFeature = () => {
+        if (newFeature.communityFeatures?.trim() && !formData.communityFeatures.includes(newFeature.communityFeatures.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                communityFeatures: [...prev.communityFeatures, newFeature.communityFeatures.trim()]
+            }))
+            setNewFeature(prev => ({ ...prev, communityFeatures: '' }))
+        }
+    }
+
+    const removeCommunityFeature = (feature: string) => {
+        setFormData(prev => ({
+            ...prev,
+            communityFeatures: prev.communityFeatures.filter(f => f !== feature)
+        }))
+    }
+
+    // Generic feature handlers
+    const handleFeatureChange = (featureType: string, value: string) => {
+        setNewFeature(prev => ({ ...prev, [featureType]: value }))
+    }
+
+    const handleAddFeature = (featureType: string) => {
+        const value = newFeature[featureType]?.trim()
+        if (value && !(formData[featureType as keyof PropertyData] as string[])?.includes(value)) {
+            setFormData(prev => ({
+                ...prev,
+                [featureType]: [...(prev[featureType as keyof PropertyData] as string[]), value]
+            }))
+            setNewFeature(prev => ({ ...prev, [featureType]: '' }))
+        }
+    }
+
+    const handleRemoveFeature = (featureType: string, item: string) => {
+        setFormData(prev => ({
+            ...prev,
+            [featureType]: (prev[featureType as keyof PropertyData] as string[]).filter(f => f !== item)
         }))
     }
 
@@ -242,6 +386,30 @@ export default function AddProperty() {
                 return
             }
 
+            if (!formData.propertyType) {
+                setErrorMessage('Please select a Property Type')
+                setIsLoading(false)
+                return
+            }
+
+            if (!formData.propertySubType) {
+                setErrorMessage('Please select a Property Sub Type')
+                setIsLoading(false)
+                return
+            }
+
+            if (!formData.originalPrice) {
+                setErrorMessage('Please enter an Original Price')
+                setIsLoading(false)
+                return
+            }
+
+            if (!formData.taxAmount) {
+                setErrorMessage('Please enter a Tax Amount')
+                setIsLoading(false)
+                return
+            }
+
             if (!formData.streetNumber || !formData.city || !formData.stateOrProvince || !formData.postalCode) {
                 setErrorMessage('Please fill in all required location fields (Street Number, City, State, Postal Code)')
                 setIsLoading(false)
@@ -254,29 +422,29 @@ export default function AddProperty() {
                 description: formData.description.trim(),
                 propertyType: formData.propertyType,
                 propertySubType: formData.propertySubType || null,
-                price: formData.price,
-                originalPrice: formData.originalPrice || null,
+                price: Number(formData.price),
+                originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
                 securityDeposit: formData.securityDeposit || null,
-                taxAmount: formData.taxAmount || null,
+                taxAmount: formData.taxAmount ? Number(formData.taxAmount) : null,
                 canRent: formData.canRent,
-                bedrooms: formData.bedrooms || null,
-                bathrooms: formData.bathrooms || null,
-                bathroomsFull: formData.bathroomsFull || null,
-                bathroomsHalf: formData.bathroomsHalf || null,
-                area: formData.area || null,
-                lotSizeAcres: formData.lotSizeAcres || null,
-                lotSizeSquareFeet: formData.lotSizeSquareFeet || null,
-                yearBuilt: formData.yearBuilt || null,
-                storiesTotal: formData.storiesTotal || null,
+                bedrooms: formData.bedrooms !== undefined && formData.bedrooms !== null ? Number(formData.bedrooms) : null,
+                bathrooms: formData.bathrooms !== undefined && formData.bathrooms !== null ? Number(formData.bathrooms) : null,
+                bathroomsFull: formData.bathroomsFull !== undefined && formData.bathroomsFull !== null ? Number(formData.bathroomsFull) : null,
+                bathroomsHalf: formData.bathroomsHalf !== undefined && formData.bathroomsHalf !== null ? Number(formData.bathroomsHalf) : null,
+                area: formData.area !== undefined && formData.area !== null ? Number(formData.area) : null,
+                lotSizeAcres: formData.lotSizeAcres !== undefined && formData.lotSizeAcres !== null ? Number(formData.lotSizeAcres) : null,
+                lotSizeSquareFeet: formData.lotSizeSquareFeet !== undefined && formData.lotSizeSquareFeet !== null ? Number(formData.lotSizeSquareFeet) : 0,
+                yearBuilt: formData.yearBuilt !== undefined && formData.yearBuilt !== null ? Number(formData.yearBuilt) : null,
+                storiesTotal: formData.storiesTotal !== undefined && formData.storiesTotal !== null ? Number(formData.storiesTotal) : null,
                 address: sanitizeSearchInput(formData.address),
-                streetNumber: formData.streetNumber || null,
-                streetName: formData.streetName || null,
+                streetNumber: formData.streetNumber || '',
+                streetName: formData.streetName || '',
                 city: formData.city || null,
                 stateOrProvince: formData.stateOrProvince || null,
                 postalCode: formData.postalCode || null,
                 county: formData.county || null,
-                latitude: formData.latitude || null,
-                longitude: formData.longitude || null,
+                latitude: formData.latitude ? Number(formData.latitude) : null,
+                longitude: formData.longitude ? Number(formData.longitude) : null,
                 photosCount: formData.images.length,
                 amenities: formData.amenities,
                 appliances: formData.appliances,
@@ -285,11 +453,11 @@ export default function AddProperty() {
                 parking: formData.parking,
                 interiorFeatures: formData.interiorFeatures,
                 exteriorFeatures: formData.exteriorFeatures,
-                associationFee: formData.associationFee || null,
+                associationFee: formData.associationFee ? Number(formData.associationFee) : null,
                 associationFeeFrequency: formData.associationFeeFrequency || null,
                 communityFeatures: formData.communityFeatures,
                 seniorCommunityYN: formData.seniorCommunityYN || null,
-                daysOnMarket: formData.daysOnMarket || null,
+                daysOnMarket: formData.daysOnMarket ? Number(formData.daysOnMarket) : null,
                 listAgentName: formData.listAgentName || null,
                 listAgentEmail: formData.listAgentEmail || null,
                 listAgentPhone: formData.listAgentPhone || null,
@@ -313,7 +481,7 @@ export default function AddProperty() {
                 files: Array.from(form.keys()),
             })
 
-            const response = await api.post('/properties', form, {
+            const response = await api.post('/agent/add-property', form, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     "Authorization": `Bearer ${token}`
@@ -382,48 +550,6 @@ export default function AddProperty() {
             setIsLoading(false)
         }
     }
-
-    const FeatureInput = ({ label, featureType, colors }: { label: string; featureType: string; colors: string }) => (
-        <Card className="border-0 shadow-md">
-            <CardHeader className={`border-b border-slate-200 ${colors}`}>
-                <CardTitle className="text-lg">{label}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        placeholder={`Add ${label.toLowerCase()}`}
-                        value={newFeature[featureType] || ''}
-                        onChange={(e) => setNewFeature(prev => ({ ...prev, [featureType]: e.target.value }))}
-                        onKeyPress={(e) => e.key === 'Enter' && addFeature(featureType)}
-                        className="h-10"
-                    />
-                    <Button
-                        type="button"
-                        onClick={() => addFeature(featureType)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </Button>
-                </div>
-
-                {(formData[featureType as keyof PropertyData] as string[])?.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                        {(formData[featureType as keyof PropertyData] as string[]).map((item) => (
-                            <Badge
-                                key={item}
-                                className="cursor-pointer hover:bg-opacity-80 flex items-center gap-1 py-1 px-2"
-                                onClick={() => removeFeature(featureType, item)}
-                            >
-                                {item}
-                                <X className="w-3 h-3" />
-                            </Badge>
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    )
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -497,26 +623,28 @@ export default function AddProperty() {
                                         className="w-full h-10 px-3 border border-slate-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                     >
                                         <option value="">Select Property Type</option>
-                                        <option value="Residential">Residential</option>
-                                        <option value="Commercial">Commercial</option>
-                                        <option value="Industrial">Industrial</option>
-                                        <option value="Land">Land</option>
+                                        {propertyTypeOptions.map((type) => (
+                                            <option key={type} value={type}>{type}</option>
+                                        ))}
                                     </select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="propertySubType" className="text-sm font-semibold text-slate-700">
-                                        Property Sub Type <span className="text-slate-400 text-xs">(Optional)</span>
+                                        Property Sub Type <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    <select
                                         id="propertySubType"
                                         name="propertySubType"
-                                        type="text"
-                                        placeholder="e.g., Condominium, Single Family"
-                                        value={formData.propertySubType}
+                                        value={formData.propertySubType || ''}
                                         onChange={handleInputChange}
-                                        className="h-10"
-                                    />
+                                        className="w-full h-10 px-3 border border-slate-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                    >
+                                        <option value="">Select Property Sub Type</option>
+                                        {propertySubtypeOptions.map((subtype) => (
+                                            <option key={subtype} value={subtype}>{subtype}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </CardContent>
@@ -616,7 +744,7 @@ export default function AddProperty() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="price" className="text-sm font-semibold text-slate-700">
-                                        Price <span className="text-red-500">*</span>
+                                        Offer Price (if no offer then keep the same price as original price) <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="price"
@@ -631,7 +759,7 @@ export default function AddProperty() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="originalPrice" className="text-sm font-semibold text-slate-700">
-                                        Original Price <span className="text-slate-400 text-xs">(Optional)</span>
+                                        Original Price <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="originalPrice"
@@ -646,7 +774,7 @@ export default function AddProperty() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="taxAmount" className="text-sm font-semibold text-slate-700">
-                                        Tax Amount <span className="text-slate-400 text-xs">(Optional)</span>
+                                        Tax Amount <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="taxAmount"
@@ -931,14 +1059,325 @@ export default function AddProperty() {
 
                     {/* Features & Amenities */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FeatureInput label="Amenities" featureType="amenities" colors="bg-gradient-to-r from-red-50 to-rose-50" />
-                        <FeatureInput label="Appliances" featureType="appliances" colors="bg-gradient-to-r from-cyan-50 to-blue-50" />
-                        <FeatureInput label="Heating" featureType="heating" colors="bg-gradient-to-r from-yellow-50 to-orange-50" />
-                        <FeatureInput label="Cooling" featureType="cooling" colors="bg-gradient-to-r from-sky-50 to-cyan-50" />
-                        <FeatureInput label="Parking" featureType="parking" colors="bg-gradient-to-r from-slate-50 to-gray-50" />
-                        <FeatureInput label="Interior Features" featureType="interiorFeatures" colors="bg-gradient-to-r from-indigo-50 to-purple-50" />
-                        <FeatureInput label="Exterior Features" featureType="exteriorFeatures" colors="bg-gradient-to-r from-lime-50 to-green-50" />
-                        <FeatureInput label="Community Features" featureType="communityFeatures" colors="bg-gradient-to-r from-teal-50 to-green-50" />
+                        {/* Amenities */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Amenities</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Swimming Pool"
+                                        value={newFeature.amenities || ''}
+                                        onChange={(e) => handleFeatureChange('amenities', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('amenities')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('amenities')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.amenities as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.amenities as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('amenities', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Appliances */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Appliances</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Dishwasher"
+                                        value={newFeature.appliances || ''}
+                                        onChange={(e) => handleFeatureChange('appliances', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('appliances')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('appliances')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.appliances as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.appliances as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('appliances', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Heating */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Heating</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Central Heating"
+                                        value={newFeature.heating || ''}
+                                        onChange={(e) => handleFeatureChange('heating', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('heating')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('heating')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.heating as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.heating as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('heating', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Cooling */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-sky-50 to-cyan-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Cooling</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Central AC"
+                                        value={newFeature.cooling || ''}
+                                        onChange={(e) => handleFeatureChange('cooling', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('cooling')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('cooling')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.cooling as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.cooling as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('cooling', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Parking */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Parking</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Garage"
+                                        value={newFeature.parking || ''}
+                                        onChange={(e) => handleFeatureChange('parking', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('parking')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('parking')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.parking as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.parking as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('parking', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Interior Features */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Interior Features</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Hardwood Floors"
+                                        value={newFeature.interiorFeatures || ''}
+                                        onChange={(e) => handleFeatureChange('interiorFeatures', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('interiorFeatures')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('interiorFeatures')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.interiorFeatures as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.interiorFeatures as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('interiorFeatures', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Exterior Features */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-lime-50 to-green-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Exterior Features</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Patio"
+                                        value={newFeature.exteriorFeatures || ''}
+                                        onChange={(e) => handleFeatureChange('exteriorFeatures', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('exteriorFeatures')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('exteriorFeatures')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.exteriorFeatures as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.exteriorFeatures as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('exteriorFeatures', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Community Features */}
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-teal-50 to-green-50 border-b border-slate-200">
+                                <CardTitle className="text-lg">Community Features</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Gated Community"
+                                        value={newFeature.communityFeatures || ''}
+                                        onChange={(e) => handleFeatureChange('communityFeatures', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature('communityFeatures')}
+                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleAddFeature('communityFeatures')}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                {(formData.communityFeatures as string[])?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(formData.communityFeatures as string[]).map((item) => (
+                                            <Badge
+                                                key={item}
+                                                className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 flex items-center gap-1 py-1 px-2"
+                                                onClick={() => handleRemoveFeature('communityFeatures', item)}
+                                            >
+                                                {item}
+                                                <X className="w-3 h-3" />
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* HOA & Community */}
