@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Settings,
   CreditCard,
+  User2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +43,11 @@ const menuItems = [
     title: "Inquiries",
     url: "/agent/inquiries",
     icon: MessageSquare,
+  },
+  {
+    title:"Agent Profile",
+    url: '/agent/profile',
+    icon: User2,
   },
   {
     title: "Settings",

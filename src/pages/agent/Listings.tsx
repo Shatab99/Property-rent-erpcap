@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,16 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Edit, Eye, MapPin } from "lucide-react";
 
 const mockListings = [
@@ -71,10 +63,10 @@ const mockListings = [
 ];
 
 export default function Listings() {
+  const router = useRouter();
   const [listings] = useState(mockListings);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const filteredListings = listings.filter((listing) => {
     const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,90 +99,13 @@ export default function Listings() {
           </p>
         </div>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="admin-button-primary">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Property
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Add New Property</DialogTitle>
-              <DialogDescription>
-                Fill in the details to add a new property listing.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Property Title</Label>
-                  <Input id="title" placeholder="Modern Downtown Apartment" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">Monthly Rent</Label>
-                  <Input id="price" placeholder="$2,500" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="123 Main St, Downtown" />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="type">Property Type</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="house">House</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="land">Land</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bedrooms">Bedrooms</Label>
-                  <Input id="bedrooms" type="number" placeholder="2" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bathrooms">Bathrooms</Label>
-                  <Input id="bathrooms" type="number" placeholder="2" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Describe the property features, amenities, and location..."
-                  rows={3}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="images">Property Images</Label>
-                <Input id="images" type="file" multiple accept="image/*" />
-                <p className="text-xs text-muted-foreground">
-                  Upload multiple images of the property
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button className="admin-button-primary">
-                Add Property
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          className="admin-button-primary"
+          onClick={() => router.push('/agent/add-property')}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add Property
+        </Button>
       </div>
 
       {/* Filters */}

@@ -41,7 +41,7 @@ export default function Login() {
       document.cookie = `role=${res.data.data.role}; path=/`;
 
       form.reset();
-      router.push(res.data.data.role === "ADMIN" ? "/admin" : res.data.data.role === "AGENT" ? "/agent" : res.data.data.role === "LANDLORD" ? "/landlord" : next || "/");
+      router.push(res.data.data.role === "ADMIN" ? "/admin" : res.data.data.role === "AGENT" ? "/agent" : res.data.data.role === "LANDLORD" ? "/landlord" : next || "/listings");
     }
     catch (error: any) {
       toastError(error?.response?.data?.message || error.message || "Something went wrong");

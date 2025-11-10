@@ -65,9 +65,9 @@ export default function Signup() {
                   }
 
                   window.dispatchEvent(new Event("auth-change"));
-                  toastSuccess("Email sent! Please check your inbox.", { position: "top-center" });
+                  toastSuccess("Successfully signed up !", { position: "top-center" });
                   form.reset();
-                  router.push(`/otp/${email}`);
+                  router.push(`/login`);
                 }
                 catch (error: any) {
                   toastError(error?.response?.data?.message || error.message || "Something went wrong", { position: "bottom-center" });

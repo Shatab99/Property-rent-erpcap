@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Building2, Eye, MessageSquare, TrendingUp, Calendar, Users, DollarSign } from "lucide-react";
+import Link from "next/link";
 
 export default function AgentOverview() {
   const [stats, setStats] = useState({
@@ -208,9 +209,11 @@ export default function AgentOverview() {
         <div className="mt-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-8 text-white animate-slideUp" style={{ animationDelay: "1s" }}>
           <h2 className="text-2xl font-bold mb-2">Upgrade Your Subscription</h2>
           <p className="text-blue-100 mb-4">Get access to advanced analytics, unlimited listings, and priority support.</p>
-          <Button className="bg-white text-blue-600 hover:bg-slate-100 font-semibold">
-            View Plans
-          </Button>
+          <Link href="/agent/subscription-plans">
+            <Button className="bg-white text-blue-600 hover:bg-slate-100 font-semibold">
+              View Plans
+            </Button>
+          </Link>
         </div>
       </div>
 
