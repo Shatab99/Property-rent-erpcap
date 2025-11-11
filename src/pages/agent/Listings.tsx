@@ -12,8 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Eye, MapPin, Loader2, AlertCircle, DollarSign, Bed, Bath, Ruler } from "lucide-react";
+import { Plus, Search, Edit, Eye, MapPin, Loader2, AlertCircle, DollarSign, Bed, Bath, Ruler, Trash2 } from "lucide-react";
 import { getToken } from "@/lib/getToken";
 import api from "@/lib/baseurl";
 import { toastError, toastSuccess } from "@/lib/toast";
@@ -72,7 +82,7 @@ const getStatusColor = (status: string) => {
 export default function Listings() {
   const router = useRouter();
   const token = getToken();
-  
+
   const [listings, setListings] = useState<Property[]>([]);
   const [filteredListings, setFilteredListings] = useState<Property[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,6 +92,9 @@ export default function Listings() {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
   const itemsPerPage = 9;
 
   useEffect(() => {
@@ -171,7 +184,7 @@ export default function Listings() {
         );
 
         toastSuccess(`Property status updated to ${newStatus}`);
-        
+
         // Refetch listings after status change
         await fetchListings();
       }
@@ -179,6 +192,43 @@ export default function Listings() {
       const errorMsg = err.response?.data?.message || "Failed to update property status";
       toastError(errorMsg);
     }
+  };
+
+  const handleDeleteClick = (propertyId: string) => {
+    setPropertyToDelete(propertyId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!propertyToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await api.delete(`/agent/delete-property/${propertyToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data?.success) {
+        toastSuccess("Property deleted successfully");
+        setDeleteDialogOpen(false);
+        setPropertyToDelete(null);
+
+        // Refetch listings after deletion
+        await fetchListings();
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || "Failed to delete property";
+      toastError(errorMsg);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setPropertyToDelete(null);
   };
 
   const paginatedListings = filteredListings.slice(
@@ -329,8 +379,8 @@ export default function Listings() {
               <Eye className="h-12 w-12 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-600 text-lg font-medium">No properties found</p>
               <p className="text-slate-400 mt-2">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Try adjusting your search or filters" 
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your search or filters"
                   : "Add a new property to get started"}
               </p>
             </CardContent>
@@ -342,7 +392,7 @@ export default function Listings() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedListings.map((property) => (
-                <Card key={property.id} className="bg-white border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <Card onClick={() => router.push(`/agent/update-property/${property.id}`)} key={property.id} className="bg-white border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer">
                   {/* Image Section */}
                   <div className="relative h-48 bg-slate-200 overflow-hidden group">
                     <img
@@ -418,7 +468,7 @@ export default function Listings() {
                         value={property.mlsStatus}
                         onValueChange={(newStatus) => handleStatusChange(property.id, newStatus)}
                       >
-                        <SelectTrigger className="w-full border-slate-200 focus:border-blue-500 focus:ring-blue-500 h-10">
+                        <SelectTrigger className="flex-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500 h-10">
                           <SelectValue placeholder="Change status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -429,6 +479,14 @@ export default function Listings() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-10 px-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+                        onClick={() => handleDeleteClick(property.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -453,11 +511,10 @@ export default function Listings() {
                       key={page}
                       variant={currentPage === page ? "default" : "outline"}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 ${
-                        currentPage === page
+                      className={`px-3 py-2 ${currentPage === page
                           ? "bg-blue-600 text-white"
                           : "hover:bg-slate-100"
-                      }`}
+                        }`}
                     >
                       {page}
                     </Button>
@@ -482,6 +539,47 @@ export default function Listings() {
             </div>
           </>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent className="border-0 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <AlertDialogHeader className="space-y-4">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <AlertDialogTitle className="text-2xl text-center">Delete Property?</AlertDialogTitle>
+              <AlertDialogDescription className="text-center text-slate-600">
+                <p className="font-semibold mb-2">This action cannot be undone.</p>
+                <span>The property will be permanently deleted and can never be retrieved after deletion.</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="gap-3 sm:gap-3">
+              <AlertDialogCancel
+                onClick={handleDeleteCancel}
+                className="border-slate-300 hover:bg-slate-100 transition-all duration-200"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="bg-red-600 text-white hover:bg-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Permanently
+                  </>
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
