@@ -18,9 +18,10 @@ interface AgentProfileData {
   officePhone: string
   website?: string
   licenseNumber: string
-  experience?: string
-  minBudget?: number
-  maxBudget?: number
+  experience: string
+  minBudget: number
+  maxBudget: number
+  targetedCity: string
   otherLanguages: string[]
   aboutAgent: string
   specialties: string[]
@@ -34,8 +35,9 @@ export default function AgentProfile() {
     website: '',
     licenseNumber: '',
     experience: '',
-    minBudget: undefined,
-    maxBudget: undefined,
+    minBudget: 0,
+    maxBudget: 0,
+    targetedCity: '',
     otherLanguages: [],
     aboutAgent: '',
     specialties: [],
@@ -77,6 +79,7 @@ export default function AgentProfile() {
             experience: profileData.experience || '',
             minBudget: profileData.minBudget || undefined,
             maxBudget: profileData.maxBudget || undefined,
+            targetedCity: profileData.targetedCity || '',
             otherLanguages: profileData.otherLanguages || [],
             aboutAgent: profileData.aboutAgent || '',
             specialties: profileData.specialties || [],
@@ -152,7 +155,7 @@ export default function AgentProfile() {
       }
 
       // Validate required fields
-      if (!formData.officeName.trim() || !formData.officeAddress.trim() || !formData.officePhone.trim() || !formData.licenseNumber.trim() || !formData.aboutAgent.trim()) {
+      if (!formData.officeName.trim() || !formData.officeAddress.trim() || !formData.officePhone.trim() || !formData.licenseNumber.trim() || !formData.experience.trim() || formData.minBudget === 0 || formData.maxBudget === 0 || !formData.targetedCity.trim() || !formData.aboutAgent.trim()) {
         setErrorMessage('Please fill in all required fields')
         setIsLoading(false)
         return
@@ -168,6 +171,7 @@ export default function AgentProfile() {
         experience: formData.experience?.trim(),
         minBudget: formData.minBudget,
         maxBudget: formData.maxBudget,
+        targetedCity: formData.targetedCity.trim(),
         otherLanguages: formData.otherLanguages,
         aboutAgent: formData.aboutAgent.trim(),
         specialties: formData.specialties
@@ -332,7 +336,7 @@ export default function AgentProfile() {
               {/* Experience */}
               <div className="space-y-2">
                 <Label htmlFor="experience" className="text-sm font-semibold text-slate-700">
-                  Years of Experience <span className="text-slate-400 text-xs">(Optional)</span>
+                  Years of Experience <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="experience"
@@ -345,11 +349,26 @@ export default function AgentProfile() {
                 />
               </div>
 
-              {/* Budget Range */}
+              {/* Targeted City */}
+              <div className="space-y-2">
+                <Label htmlFor="targetedCity" className="text-sm font-semibold text-slate-700">
+                  Targeted City <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="targetedCity"
+                  name="targetedCity"
+                  type="text"
+                  placeholder="e.g., New York, Los Angeles, Chicago"
+                  value={formData.targetedCity}
+                  onChange={handleInputChange}
+                  className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+                <p className="text-xs text-slate-500">Primary city or region you focus on</p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="minBudget" className="text-sm font-semibold text-slate-700">
-                    Minimum Budget <span className="text-slate-400 text-xs">(Optional)</span>
+                    Minimum Budget <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="minBudget"
@@ -359,7 +378,7 @@ export default function AgentProfile() {
                     value={formData.minBudget || ''}
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
-                      minBudget: e.target.value ? parseFloat(e.target.value) : undefined
+                      minBudget: e.target.value ? parseFloat(e.target.value) : 0
                     }))}
                     className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
                   />
@@ -368,7 +387,7 @@ export default function AgentProfile() {
 
                 <div className="space-y-2">
                   <Label htmlFor="maxBudget" className="text-sm font-semibold text-slate-700">
-                    Maximum Budget <span className="text-slate-400 text-xs">(Optional)</span>
+                    Maximum Budget <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="maxBudget"
@@ -378,7 +397,7 @@ export default function AgentProfile() {
                     value={formData.maxBudget || ''}
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
-                      maxBudget: e.target.value ? parseFloat(e.target.value) : undefined
+                      maxBudget: e.target.value ? parseFloat(e.target.value) : 0
                     }))}
                     className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
                   />

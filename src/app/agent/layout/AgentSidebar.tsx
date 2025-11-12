@@ -40,11 +40,6 @@ const menuItems = [
     icon: CreditCard,
   },
   {
-    title: "Inquiries",
-    url: "/agent/inquiries",
-    icon: MessageSquare,
-  },
-  {
     title:"Agent Profile",
     url: '/agent/profile',
     icon: User2,

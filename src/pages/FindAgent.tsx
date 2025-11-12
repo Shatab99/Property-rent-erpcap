@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Mail, Phone, Loader, MessageCircle, Star } from "lucide-react";
 import api from "@/lib/baseurl";
 import { toastError } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 interface Agent {
   id: string;
@@ -15,6 +16,11 @@ interface Agent {
   email: string;
   phone: string;
   profileImage: string;
+  maxBudget: number;
+  minBudget: number;
+  rating: number;
+  reviewCount: number;
+  officeName: string;
 }
 
 interface AgentResponse {
@@ -38,6 +44,7 @@ export default function FindAgent() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [perPage] = useState(12);
+  const router = useRouter();
 
   useEffect(() => {
     fetchAgents(1, "");
@@ -155,11 +162,27 @@ export default function FindAgent() {
             </div>
           ) : (
             <>
+              {/* Sort and Count */}
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-lg font-semibold text-foreground">
+                  {totalItems.toLocaleString()} agents found
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Sort by</span>
+                  <select className="px-3 py-1 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+                    <option>Relevant agents</option>
+                    <option>Highest rated</option>
+                    <option>Most reviews</option>
+                    <option>Most sales</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 {agents.map((agent) => (
-                  <Card key={agent.id} className="shadow-md border hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden">
+                  <Card onClick={() => router.push(`/findAgent/${agent.id}`)} key={agent.id} className="shadow-md border hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden cursor-pointer">
                     <CardContent className="p-0">
-                      <div className="flex items-start gap-6 p-6">
+                      <div className="flex items-center gap-6 p-6">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
                           <Avatar className="h-24 w-24 border-2 border-slate-200 rounded-full">
@@ -170,61 +193,56 @@ export default function FindAgent() {
                           </Avatar>
                         </div>
 
-                        {/* Main Info */}
+                        {/* Left Info - Name, Office, Rating */}
                         <div className="flex-1 min-w-0">
-                          {/* Name and Title */}
+                          {/* Name with verification badge */}
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-lg text-foreground">{agent.name}</h3>
-                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600" title="Verified">
-                              <span className="text-sm font-bold">✓</span>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-100 text-blue-600 flex-shrink-0" title="Verified">
+                              <span className="text-xs font-bold">✓</span>
                             </span>
                           </div>
 
-                          <p className="text-sm text-muted-foreground mb-3">Real Estate Agent</p>
+                          {/* Office Name */}
+                          <p className="text-sm text-muted-foreground mb-2">{agent.officeName}</p>
 
                           {/* Rating */}
-                          <div className="flex items-center gap-2 mb-4">
+                          <div className="flex items-center gap-2 mb-2">
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${i < Math.round(agent.rating)
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'fill-slate-200 text-slate-200'
+                                    }`}
+                                />
                               ))}
                             </div>
-                            <span className="text-sm font-semibold text-foreground">5.0</span>
-                            <span className="text-sm text-muted-foreground">• 6 reviews • 3 testimonials</span>
+                            <span className="text-sm font-semibold text-foreground">{agent.rating.toFixed(1)}</span>
                           </div>
 
-                          {/* Stats */}
-                          <div className="flex flex-col sm:flex-row gap-6 text-sm mb-4">
-                            <div>
-                              <p className="text-muted-foreground">Price Range</p>
-                              <p className="font-semibold text-foreground">$10k - $1.8M</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Sales in Last 12 Months</p>
-                              <p className="font-semibold text-foreground">65 sales</p>
-                            </div>
-                          </div>
+                          {/* Reviews and Testimonials */}
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-medium">{agent.reviewCount} reviews</span>
+                          </p>
+                        </div>
 
-                          {/* Contact Info */}
-                          <div className="flex flex-col sm:flex-row gap-4 text-sm mb-4">
-                            <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                              <Mail className="h-4 w-4 flex-shrink-0" />
-                              <a href={`mailto:${agent.email}`} className="hover:underline truncate">
-                                {agent.email}
-                              </a>
-                            </div>
-                            {agent.phone && (
-                              <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                                <Phone className="h-4 w-4 flex-shrink-0" />
-                                <a href={`tel:${agent.phone}`} className="hover:underline">
-                                  {agent.phone}
-                                </a>
-                              </div>
-                            )}
+                        {/* Middle Info - Budget Range */}
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-4">
+                            <p className="text-sm font-semibold text-foreground">
+                              ${(agent.minBudget / 1000).toFixed(0)}k - ${(agent.maxBudget / 1000).toFixed(0)}k <span className="text-muted-foreground font-normal">price range</span>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              -- <span className="text-muted-foreground font-normal">sales in last 12 months</span>
+                            </p>
                           </div>
                         </div>
 
-                        {/* Contact Button */}
+                        {/* Right Info - Contact Button */}
                         <div className="flex-shrink-0">
                           <Button className="gap-2 bg-primary hover:bg-primary/90 whitespace-nowrap">
                             <MessageCircle className="h-4 w-4" />

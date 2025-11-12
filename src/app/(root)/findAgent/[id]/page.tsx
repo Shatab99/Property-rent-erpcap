@@ -1,11 +1,14 @@
-import InquiryDetails from '@/pages/admin/InquiryDetails'
+import FindAgentDetails from '@/pages/FindAgentDetails';
 import React from 'react'
 
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
+
     const { id } = await params;
+
+
     return (
         <div>
-            <InquiryDetails id={id} />
+            <FindAgentDetails id={id} />
         </div>
     )
 }

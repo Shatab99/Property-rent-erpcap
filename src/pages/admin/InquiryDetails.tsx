@@ -1,38 +1,171 @@
 'use client';
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Mail, Phone, Calendar, Building2, Send } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Calendar, MapPin, HelpCircle, Send, Loader2 } from "lucide-react";
+import { getToken } from "@/lib/getToken";
+import api from "@/lib/baseurl";
+import { toastError } from "@/lib/toast";
 
-const mockInquiryData = {
-  "1": {
-    id: "1",
-    userName: "John Smith",
-    userEmail: "john.smith@email.com",
-    userPhone: "+1 (555) 123-4567",
-    propertyId: "P001",
-    propertyName: "Modern Downtown Apartment",
-    propertyAddress: "123 Main St, Downtown",
-    message: "I'm interested in scheduling a viewing for this property. Is it available this weekend? I work downtown and this location would be perfect for my commute. Could you also let me know about parking availability and if pets are allowed?",
-    date: "2024-01-23",
-    status: "new",
-    priority: "medium",
-    responses: [
-      {
-        from: "admin",
-        message: "Thank you for your interest! I'd be happy to schedule a viewing for you this weekend. The property does include one parking space and we do allow pets with a small deposit. Would Saturday afternoon work for you?",
-        date: "2024-01-23 14:30",
-      }
-    ]
-  }
-};
+interface InquiryData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  helpWith: string;
+  zipCode: string;
+  message: string | null;
+  isResponded: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data: InquiryData;
+}
 
 export default function InquiryDetails({ id }: { id: string }) {
   const router = useRouter();
-  const inquiry = mockInquiryData[id as keyof typeof mockInquiryData];
+  const token = getToken();
+
+  const [inquiry, setInquiry] = useState<InquiryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [responseMessage, setResponseMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch inquiry details
+  useEffect(() => {
+    const fetchInquiryDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get<ApiResponse>(
+          `/admin/inquiries/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setInquiry(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching inquiry details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchInquiryDetails();
+    }
+  }, [id, token]);
+
+  const handleSendResponse = async () => {
+    if (!responseMessage.trim() || !inquiry) return;
+
+    try {
+      setIsSubmitting(true);
+      // TODO: Add API call to send response
+      // await api.post(`/admin/inquiries/${id}/respond`, {
+      //   message: responseMessage
+      // }, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
+      toastError("For this feature you need to set up an email service like sendgrid");
+      console.log("Response sent:", responseMessage);
+      setResponseMessage("");
+      // Optionally refresh the inquiry data
+    } catch (error) {
+      console.error("Error sending response:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMarkAsResponded = async () => {
+    if (!inquiry) return;
+
+    try {
+      setIsSubmitting(true);
+      // TODO: Add API call to mark as responded
+      await api.put(`/admin/inquiries/${id}/respond`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Marked as responded");
+      // Update local state
+      setInquiry({ ...inquiry, isResponded: true });
+    } catch (error) {
+      console.error("Error marking as responded:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getHelpWithBadge = (helpWith: string) => {
+    const badgeColors: { [key: string]: { bg: string; text: string; border: string } } = {
+      buying: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
+      selling: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
+      renting: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+      investing: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+      other: { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200" },
+    };
+
+    const color = badgeColors[helpWith] || badgeColors.other;
+    return (
+      <span className={`${color.bg} ${color.text} border ${color.border} px-3 py-1 rounded-full text-xs font-medium capitalize`}>
+        {helpWith}
+      </span>
+    );
+  };
+
+  const getStatusBadge = (isResponded: boolean) => {
+    if (isResponded) {
+      return (
+        <span className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-xs font-medium">
+          Responded
+        </span>
+      );
+    }
+    return (
+      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-medium">
+        New
+      </span>
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
+          <p className="text-muted-foreground">Loading inquiry details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!inquiry) {
     return (
@@ -48,34 +181,6 @@ export default function InquiryDetails({ id }: { id: string }) {
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "new":
-        return <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded-full text-xs font-medium">New</span>;
-      case "replied":
-        return <span className="status-active">Replied</span>;
-      case "pending":
-        return <span className="status-pending">Pending</span>;
-      case "closed":
-        return <span className="status-inactive">Closed</span>;
-      default:
-        return <span className="status-inactive">Unknown</span>;
-    }
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <span className="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-full text-xs font-medium">High</span>;
-      case "medium":
-        return <span className="bg-yellow-50 text-yellow-600 border border-yellow-200 px-2 py-1 rounded-full text-xs font-medium">Medium</span>;
-      case "low":
-        return <span className="bg-gray-50 text-gray-600 border border-gray-200 px-2 py-1 rounded-full text-xs font-medium">Low</span>;
-      default:
-        return <span className="status-inactive">Unknown</span>;
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -90,134 +195,178 @@ export default function InquiryDetails({ id }: { id: string }) {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Inquiry Details</h1>
           <p className="text-muted-foreground mt-2">
-            Inquiry from {inquiry.userName} - #{inquiry.id}
+            Inquiry from {inquiry.name} - #{inquiry.id}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User & Property Info */}
-        <Card className="admin-card">
-          <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
+        {/* Contact Information */}
+        <Card className="shadow-md border-0">
+          <CardHeader className="border-b border-border bg-gray-50">
+            <CardTitle className="text-lg">Contact Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-6 space-y-4">
+            {/* User Avatar and Name */}
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src="" alt={inquiry.userName} />
-                <AvatarFallback>
-                  {inquiry.userName.split(" ").map(n => n[0]).join("")}
+                <AvatarImage src="" alt={inquiry.name} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold">
+                  {inquiry.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold">{inquiry.userName}</h3>
-                <p className="text-sm text-muted-foreground">Customer</p>
+                <h3 className="font-semibold text-foreground">{inquiry.name}</h3>
+                <p className="text-sm text-muted-foreground">Inquirer</p>
               </div>
             </div>
 
             <Separator />
 
+            {/* Contact Details */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{inquiry.userEmail}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{inquiry.userPhone}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{inquiry.date}</span>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h4 className="font-medium mb-2">Property Details</h4>
               <div className="flex items-start gap-3">
-                <Building2 className="h-4 w-4 text-muted-foreground mt-1" />
+                <Mail className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-sm font-medium text-foreground break-all">{inquiry.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Phone className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-sm">{inquiry.propertyName}</p>
-                  <p className="text-xs text-muted-foreground">{inquiry.propertyAddress}</p>
-                  <p className="text-xs text-muted-foreground">ID: {inquiry.propertyId}</p>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-sm font-medium text-foreground">{inquiry.phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Inquiry Date</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(inquiry.createdAt)}</p>
                 </div>
               </div>
             </div>
 
             <Separator />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Status</p>
-                {getStatusBadge(inquiry.status)}
+            {/* Inquiry Details */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <HelpCircle className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Type of Help</p>
+                  {getHelpWithBadge(inquiry.helpWith)}
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">Priority</p>
-                {getPriorityBadge(inquiry.priority)}
+
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Zip Code</p>
+                  <p className="text-sm font-medium text-foreground">{inquiry.zipCode}</p>
+                </div>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* Status */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Status</p>
+              {getStatusBadge(inquiry.isResponded)}
             </div>
           </CardContent>
         </Card>
 
-        {/* Conversation */}
-        <Card className="admin-card lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Conversation</CardTitle>
+        {/* Inquiry Message and Response */}
+        <Card className="shadow-md border-0 lg:col-span-2">
+          <CardHeader className="border-b border-border bg-gray-50">
+            <CardTitle className="text-lg">Inquiry Message & Response</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Original Message */}
-            <div className="space-y-4">
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {inquiry.userName.split(" ").map(n => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">{inquiry.userName}</span>
-                  <span className="text-xs text-muted-foreground">{inquiry.date}</span>
+          <CardContent className="pt-6 space-y-6">
+            {/* Original Inquiry */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">Original Inquiry</h4>
+              {inquiry.message ? (
+                <div className="bg-slate-50 p-4 rounded-lg border border-border">
+                  <p className="text-sm text-foreground leading-relaxed">{inquiry.message}</p>
                 </div>
-                <p className="text-sm">{inquiry.message}</p>
-              </div>
-
-              {/* Responses */}
-              {inquiry.responses.map((response, index) => (
-                <div key={index} className="bg-primary/5 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                        AD
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">Admin Response</span>
-                    <span className="text-xs text-muted-foreground">{response.date}</span>
-                  </div>
-                  <p className="text-sm">{response.message}</p>
+              ) : (
+                <div className="bg-slate-50 p-4 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground italic">No additional message provided</p>
                 </div>
-              ))}
+              )}
             </div>
 
             <Separator />
 
-            {/* Reply Form */}
+            {/* Send Response */}
             <div className="space-y-4">
-              <h4 className="font-medium">Send Response</h4>
+              <div>
+                <h4 className="font-semibold text-foreground mb-3">Send Response via mail</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Reply to this inquiry to help the user
+                </p>
+              </div>
+
               <Textarea
                 placeholder="Type your response here..."
-                rows={4}
-                className="resize-none"
+                value={responseMessage}
+                onChange={(e) => setResponseMessage(e.target.value)}
+                rows={5}
+                className="resize-none border-border focus:ring-2 focus:ring-primary/20"
               />
-              <div className="flex gap-2">
-                <Button className="admin-button-primary">
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Response
+
+              <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+                <Button
+                  onClick={handleSendResponse}
+                  disabled={isSubmitting || !responseMessage.trim()}
+                  className="flex-1 sm:flex-none px-6 py-2 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg h-auto transition-all"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send Response
+                    </>
+                  )}
                 </Button>
-                <Button variant="outline">
-                  Mark as Resolved
+
+                <Button
+                  onClick={handleMarkAsResponded}
+                  disabled={isSubmitting || inquiry.isResponded}
+                  variant="outline"
+                  className="flex-1 sm:flex-none px-6 py-2 border-border text-foreground hover:bg-slate-50 font-medium rounded-lg h-auto transition-all"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : inquiry.isResponded ? (
+                    "Marked as Responded"
+                  ) : (
+                    "Mark as Responded"
+                  )}
                 </Button>
               </div>
+
+              {inquiry.isResponded && (
+                <div className="bg-green-50 border border-green-200 text-green-700 text-sm p-3 rounded-lg">
+                  ✓ This inquiry has been marked as responded
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
